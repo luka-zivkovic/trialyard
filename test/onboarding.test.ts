@@ -86,9 +86,9 @@ test("missing requests identify the selected store and malformed options identif
 });
 
 test("skill version update retains validation of earlier snapshots and exposes rebuild effects", async () => {
-  const context = await setupSkillContext(); assert.equal(context.identity.version, "0.3.2");
+  const context = await setupSkillContext(); assert.equal(context.identity.version, "0.4.0");
   assert(context.tools.some(tool => tool.command === "rebuild" && tool.effect === "write_new_connection"));
-  for (const version of ["0.1.0", "0.2.0", "0.3.0", "0.3.1", "0.3.2"]) connectionContract("skillManifest", { ...(await loadSetupSkill()).manifest, version });
+  for (const version of ["0.1.0", "0.2.0", "0.3.0", "0.3.1", "0.3.2", "0.4.0"]) connectionContract("skillManifest", { ...(await loadSetupSkill()).manifest, version });
   assert.throws(() => connectionContract("skillManifest", { schemaVersion: "trial-runner/skill-package/v1", id: "connect-agent", version: "9.0.0" }));
 });
 

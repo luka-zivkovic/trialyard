@@ -1,8 +1,22 @@
 # Setup skill and reusable connections
 
-**CURRENT — 2026-09-13:** setup skill 0.3.2 updates Trialyard branding and public integration routing. Versions 0.1.0 through 0.3.1 remain readable. The deterministic connection workflow supports the declared Node function template; custom integration guidance covers source discovery, owner questions, capability/fidelity records and bounded qualification.
+**CURRENT — 2026-09-13:** setup skill 0.4.0 adds a fresh-repository initialization route and explicit qualification guidance that preserves candidate failures. Versions 0.1.0 through 0.3.2 remain readable. The deterministic connection workflow supports the declared Node function template; custom integration guidance covers source discovery, owner questions, capability/fidelity records and bounded qualification.
 
 **TARGET:** maintain setup instructions as versioned product assets. Automatic source investigation and application-hosted generation/repair remain later work.
+
+## Start before configuration exists
+
+Give an assistant with repository/terminal access the Trialyard checkout, the selected agent repository and [SKILL.md](../skills/connect-agent/SKILL.md). Ask it to initialize a connection to the actual agent and leave reusable commands. The [initialization reference](../skills/connect-agent/references/initialization.md) covers CLI bootstrap, missing declarations, source investigation and supported routing. It can be read directly before the CLI exists; after building, load it with `trial skill connect-agent --reference initialization`.
+
+This workflow uses host tools to author the declaration or adapter. `inspect` itself still reads only public manifests. The existing `init` command creates a synthetic example in a new directory; this skill does not implement in-place initialization, a `doctor` command or an npm release.
+
+## Preserve failures during setup
+
+The [qualification reference](../skills/connect-agent/references/qualification.md) requires an explicit separation between integration checks, known-defect controls and user scenarios. Freeze the declared cases, expected-behavior authority, evidence scope, repetitions and bounds before qualification. Preserve all outcomes and amendments. Behavioral expectations are externally owned; absent or unreviewed expectations do not become passing labels.
+
+For example, an agent may say a reservation succeeded while a complete independent snapshot shows no reservation. That can establish a working observation path and expose incorrect candidate behavior at the same time. Setup should retain the evidence and hand off the defect. Changing the agent to correct it requires a separately requested repair; if repair is already authorized, retain the original result first and rerun the unchanged applicable cases on a new candidate revision.
+
+Known-defect controls challenge a specific detection claim. They do not establish general evaluator accuracy, unseen-case quality or a release decision. Skill prose guides the host; `check-integration` does not enforce a case freeze, approve expectations, prevent cherry-picking or prove that the assistant followed these instructions. Independent human onboarding and fresh-assistant behavioral qualification remain separate evidence gates.
 
 ## Use the supported flow
 
@@ -51,7 +65,7 @@ For a prepared plan, its environment descriptor, fixture, capabilities and profi
 
 Both the recipe entry filename and every declared path obey the public path policy. Validation rejects hidden/credential paths, traversal, case collisions, symlinks, hardlinks and special files. It prechecks the entire selected inventory before payload reads, limits it to 512 files/64 MiB with 16 MiB per file, and refuses plan references outside that inventory before opening them. Recipe JSON remains bounded to 256 KiB and the existing strict JSON limits. Public declarations must contain no secrets; the checker is not an arbitrary-content secret scanner. Unlisted unrelated files are not inspected or certified.
 
-The skill package keeps instructions in [SKILL.md](../skills/connect-agent/SKILL.md), a closed package manifest and six conditional references, including the canonical integration-record schema. The loader hashes all package files and emits only the main instructions plus the selected reference. Instruction changes alter identity even if a maintainer forgets to bump the version; intentional releases should update the version and corresponding supported contracts together. No duplicated prompt text lives in the CLI.
+The skill package keeps instructions in [SKILL.md](../skills/connect-agent/SKILL.md), a closed package manifest and seven conditional references, including initialization and the canonical integration-record schema. The loader hashes all package files and emits only the main instructions plus the selected reference. Instruction changes alter identity even if a maintainer forgets to bump the version; intentional releases should update the version and corresponding supported contracts together. No duplicated prompt text lives in the CLI.
 
 ## Assisted integration records
 

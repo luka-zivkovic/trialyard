@@ -106,6 +106,16 @@ Run the new prepared plan with a new request ID. The previous connection and evi
 
 For custom frameworks or services, use an explicit agent/environment adapter. The optional [setup skill](docs/connection-setup.md) guides source discovery, unresolved owner decisions, capability declarations, and bounded qualification.
 
+### Set up with an assistant
+
+An assistant with local file and terminal access can follow the bundled skill before your repository has any Trialyard configuration. Give it the two checkout paths:
+
+> Read `<trialyard-checkout>/skills/connect-agent/SKILL.md` and follow it to initialize Trialyard for `<my-agent-repository>`. Connect the actual agent, preserve its first observed failures, and leave reusable run and inspection instructions.
+
+The skill can help build the CLI, investigate your agent, and prepare the supported declaration or adapter. It keeps missing capabilities and owner decisions explicit. It does not add an automatic `init .` command or guarantee support for an arbitrary framework.
+
+**Successful setup can reveal a failing agent.** The [qualification workflow](skills/connect-agent/references/qualification.md) separates integration checks from behavior, freezes cases and external expectations before qualification, and exercises relevant known-defect controls. A candidate's current response is never used as its own correct answer. These are assistant instructions; the CLI does not enforce case selection or assessment quality.
+
 ## Integrations and experiments
 
 | Path | Current scope |

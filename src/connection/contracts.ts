@@ -5,10 +5,10 @@ import type { FileRecord } from "../contracts/types.js";
 import { parseJson } from "../contracts/strict-json.js";
 import { fail } from "../discovery/safe.js";
 
-export interface SkillIdentity { id: "connect-agent"; version: "0.1.0" | "0.2.0" | "0.3.0" | "0.3.1" | "0.3.2"; sha256: string; }
+export interface SkillIdentity { id: "connect-agent"; version: "0.1.0" | "0.2.0" | "0.3.0" | "0.3.1" | "0.3.2" | "0.4.0"; sha256: string; }
 export interface SkillManifest {
   schemaVersion: "trial-runner/skill-package/v1";
-  id: "connect-agent"; version: "0.1.0" | "0.2.0" | "0.3.0" | "0.3.1" | "0.3.2";
+  id: "connect-agent"; version: "0.1.0" | "0.2.0" | "0.3.0" | "0.3.1" | "0.3.2" | "0.4.0";
   recipeSchemaVersion: "trial-runner/connection-recipe/v1";
   entrypoint: "SKILL.md";
   references: { id: string; path: string; when: string }[];

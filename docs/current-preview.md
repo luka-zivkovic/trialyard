@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | Local core and reference | Sequential scripted trials, fresh state, limits, interruption, inspection, verification and exports | Node 24.15.0; operator-trusted processes on macOS/Linux. Synthetic reference runs need no provider or service. |
 | Node function setup | Static declarations, copied source, retained connection, files-only rebuilds | Self-contained ESM createAgent/runTurn with explicitly selected inventory tools. No dependency installation or arbitrary framework inference. |
-| Setup skill 0.3.2 | Host-assisted discovery, owner decisions, capability/fidelity contracts and qualification guidance | The CLI loads instructions and checks declarations. It does not invoke a model or orchestrate subagents. |
+| Setup skill 0.4.0 | Fresh-repository initialization guidance, discovery, owner decisions, capability/fidelity contracts, and qualification that preserves candidate failures | Host-assisted instructions; no in-place init command, automatic investigator, enforced case freeze or assessment-quality guarantee. |
 | Pi/Webdesk | Native plans, original tool callbacks, approval observations, source rebuilds and declared file cases | Pinned external Webdesk source/runtime, Pi 0.84.2, Node 24.15.0, macOS arm64, local scripted provider. |
 | Pi observation consumer | Frozen P1 assessment, immutable attempts, portable retention | Separate package; narrow approved-task scope. It never runs the candidate. |
 | Inspect AI | Offline import and reassessment of retained P1 sources | Experimental; no candidate execution or model generation. |

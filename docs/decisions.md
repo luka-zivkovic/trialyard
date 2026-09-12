@@ -12,7 +12,6 @@ Specification date: 2026-09-06. Implementation update: 2026-09-07. After complet
 | D4 | Complete the specification before code | Completed; user subsequently authorized implementation | Product boundary changes remain explicit |
 | D5 | Assume users understand the core concepts; optimize their technical workflows | User clarification on 2026-09-10 following the audit | Observed integration or iteration friction justifies a specific workflow change; preserve explicit semantics |
 | D6 | Guide custom integration through source discovery, explicit owner decisions, a retained capability/fidelity contract, bounded qualification and reusable handoff | User approved the workflow and a fresh Pi replay on 2026-09-11 | Measured replay friction warrants changes; automatic orchestration and human qualification retain separate gates |
-
 | D7 | Name the product Trialyard and create a new public repository with a polished README | User selection and publication authorization on 2026-09-13 | The user changes the name or publication scope |
 
 ## Specified defaults — ASSUMPTION
@@ -42,4 +41,4 @@ Integration acceptance by Ironside, Coeval or Dailies is not assumed. Their cont
 - **CURRENT:** implemented behavior, bounded by documented support and actual checks.
 - **ASSUMPTION:** a proposed default or unresolved direction; it does not override accepted scope.
 
-The public snapshot preserves the short `trial` command, `trial-runner.setup.json`, v1 schema identifiers, and frozen consumer identities. Private customer integrations and historical evidence archives are retained in the original repository. The public setup skill is 0.3.2; readers retain support for earlier snapshots.
+The public snapshot preserves the short `trial` command, `trial-runner.setup.json`, v1 schema identifiers, and frozen consumer identities. Private customer integrations and historical evidence archives are retained in the original repository. The public setup skill is 0.4.0; readers retain support for earlier snapshots.

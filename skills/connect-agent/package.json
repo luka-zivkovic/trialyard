@@ -1,10 +1,15 @@
 {
   "schemaVersion": "trial-runner/skill-package/v1",
   "id": "connect-agent",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "recipeSchemaVersion": "trial-runner/connection-recipe/v1",
   "entrypoint": "SKILL.md",
   "references": [
+    {
+      "id": "initialization",
+      "path": "references/initialization.md",
+      "when": "Initialize Trialyard for an existing repository with no setup declaration, or bootstrap the CLI before connecting the actual agent."
+    },
     {
       "id": "node-function",
       "path": "references/node-function.md",

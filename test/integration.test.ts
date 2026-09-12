@@ -89,15 +89,15 @@ test("checker rejects hardlinked records and path traversal before source reads"
   await assert.rejects(checkIntegration(f.file), /UNSAFE_CONNECTION_PATH/);
 });
 test("skill exposes the shipped schema and guides under one immutable package identity", async () => {
-  const base = await setupSkillContext(); assert.equal(base.identity.version, "0.3.2");
-  for (const id of ["discovery", "qualification", "integration-schema"]) {
+  const base = await setupSkillContext(); assert.equal(base.identity.version, "0.4.0");
+  for (const id of ["initialization", "discovery", "qualification", "integration-schema"]) {
     const context = await setupSkillContext(id); assert.equal(context.identity.sha256, base.identity.sha256);
     assert.equal(context.references.length, 1); assert.equal(context.references[0]!.id, id);
     if (id === "integration-schema") assert.ok(JSON.parse(context.references[0]!.content).$defs.contract);
   }
   assert.ok(base.tools.some(t => t.command === "check-integration" && t.effect === "read_integration_records"));
 });
-for (const version of ["0.1.0", "0.2.0", "0.3.0"] as const) test(`older ${version} skill snapshots remain loadable`, async t => {
+for (const version of ["0.1.0", "0.2.0", "0.3.0", "0.3.1", "0.3.2"] as const) test(`older ${version} skill snapshots remain loadable`, async t => {
   const f = await fixture(t), skill = await loadSetupSkill(), out = path.join(f.root, "skill"); await fs.mkdir(out);
   for (const [name, bytes] of skill.files) {
     await fs.mkdir(path.dirname(path.join(out, name)), { recursive: true }); await fs.writeFile(path.join(out, name), bytes);
