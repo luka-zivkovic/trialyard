@@ -1,0 +1,10 @@
+{
+  "name": "@trial-runner/pi-observation-consumer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Separate local consumer of retained Trial Runner evidence; no candidate execution",
+  "engines": { "node": "24.15.0" },
+  "scripts": { "test": "node --test test/*.test.mjs" },
+  "dependencies": { "ajv": "8.20.0" }
+}

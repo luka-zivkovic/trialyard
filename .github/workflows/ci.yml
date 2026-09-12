@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  core:
+    name: Core / ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          package-manager-cache: false
+      - name: Install pinned npm
+        run: npm install --global npm@11.12.1 --ignore-scripts
+      - run: npm ci --ignore-scripts
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run check:docs
+      - name: README reference flow
+        run: |
+          mkdir -p .trial-runs
+          npm run trial -- init .trial-runs/example
+          npm run trial -- run .trial-runs/example/plan.json --request first --store .trial-runs/store
+          npm run trial -- show --request first --store .trial-runs/store --format text
+
+  integrations:
+    name: Integration contracts and assessment
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            consumers/pi-assessment/package-lock.json
+          package-manager-cache: false
+      - name: Install pinned npm
+        run: npm install --global npm@11.12.1 --ignore-scripts
+      - run: npm ci --ignore-scripts
+      - run: npm run build
+      - run: npm run test:pi
+      - run: npm --prefix consumers/pi-assessment ci --ignore-scripts
+      - run: npm run test:assessment

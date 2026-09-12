@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.trial-runs/
+.evidence-archives/
+.env
+.env.*
+*.tgz
+.DS_Store
+__pycache__/
+.venv/
+coverage/

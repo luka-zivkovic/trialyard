@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "trial-runner/scenario/v1",
+  "id": "reserve-and-follow-up",
+  "description": "Exercise one reservation and a follow-up against fresh inventory",
+  "messages": [
+    {
+      "id": "reserve",
+      "role": "user",
+      "content": "Reserve one unit."
+    },
+    {
+      "id": "follow-up",
+      "role": "user",
+      "content": "Show my reservation and remaining stock."
+    }
+  ],
+  "provenance": {
+    "origin": "independent-reference",
+    "exposure": "runner-development"
+  },
+  "externalCriterionRefs": []
+}

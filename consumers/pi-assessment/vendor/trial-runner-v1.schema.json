@@ -1,0 +1,5496 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trial-runner.invalid/contracts/v1",
+  "$defs": {
+    "limits": {
+      "type": "object",
+      "properties": {
+        "prepareMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600000
+        },
+        "trialMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600000
+        },
+        "stopGraceMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600000
+        },
+        "snapshotMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600000
+        },
+        "cleanupMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600000
+        },
+        "maxTurns": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "maxFrameBytes": {
+          "type": "integer",
+          "minimum": 256,
+          "maximum": 1048576
+        },
+        "maxEvents": {
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 100000
+        },
+        "maxRecordedBytes": {
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 536870912
+        }
+      },
+      "required": [
+        "prepareMs",
+        "trialMs",
+        "stopGraceMs",
+        "snapshotMs",
+        "cleanupMs",
+        "maxTurns",
+        "maxFrameBytes",
+        "maxEvents",
+        "maxRecordedBytes"
+      ],
+      "additionalProperties": false
+    },
+    "file": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 536870912
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "path",
+        "bytes",
+        "sha256"
+      ],
+      "additionalProperties": false
+    },
+    "artifact": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "trial-runner/artifact/v1"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/file"
+          },
+          "maxItems": 1000,
+          "minItems": 1
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "files"
+      ],
+      "additionalProperties": false
+    },
+    "adapter": {
+      "type": "object",
+      "properties": {
+        "adapterId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "adapterVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 1048576
+          },
+          "maxItems": 100,
+          "minItems": 1
+        },
+        "cwd": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "artifactManifest": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9_.:-]+$"
+          },
+          "maxItems": 100,
+          "uniqueItems": true
+        },
+        "settingsSchema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "settings": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "adapterId",
+        "adapterVersion",
+        "argv",
+        "cwd",
+        "artifactManifest",
+        "capabilities",
+        "settingsSchema",
+        "settings"
+      ],
+      "additionalProperties": false
+    },
+    "fault": {
+      "type": "object",
+      "properties": {
+        "tool": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "invocation": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "mode": {
+          "enum": [
+            "error_before",
+            "lost_after",
+            "hang"
+          ]
+        }
+      },
+      "required": [
+        "tool",
+        "invocation",
+        "mode"
+      ],
+      "additionalProperties": false
+    },
+    "clock": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "enum": [
+            "frozen",
+            "real"
+          ]
+        },
+        "instant": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1048576
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "mode",
+        "instant"
+      ],
+      "additionalProperties": false
+    },
+    "environment": {
+      "type": "object",
+      "properties": {
+        "adapterId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "adapterVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 1048576
+          },
+          "maxItems": 100,
+          "minItems": 1
+        },
+        "cwd": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "artifactManifest": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9_.:-]+$"
+          },
+          "maxItems": 100,
+          "uniqueItems": true
+        },
+        "settingsSchema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "settings": {
+          "type": "object"
+        },
+        "initialState": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "fixtureSchema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "toolSchemas": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "clock": {
+          "$ref": "#/$defs/clock"
+        },
+        "faultPlan": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fault"
+          },
+          "maxItems": 100
+        }
+      },
+      "required": [
+        "adapterId",
+        "adapterVersion",
+        "argv",
+        "cwd",
+        "artifactManifest",
+        "capabilities",
+        "settingsSchema",
+        "settings",
+        "initialState",
+        "fixtureSchema",
+        "toolSchemas",
+        "clock",
+        "faultPlan"
+      ],
+      "additionalProperties": false
+    },
+    "plan": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "trial-runner/plan/v1"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "agent": {
+          "$ref": "#/$defs/adapter"
+        },
+        "environment": {
+          "$ref": "#/$defs/environment"
+        },
+        "scenarios": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 100,
+          "minItems": 1
+        },
+        "repetitions": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "limits": {
+          "$ref": "#/$defs/limits"
+        },
+        "evidenceProfile": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "capturePolicy": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "const": "local"
+            },
+            "externalExport": {
+              "const": "explicit"
+            }
+          },
+          "required": [
+            "content",
+            "externalExport"
+          ],
+          "additionalProperties": false
+        },
+        "secretBindings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Z0-9_]{0,127}$"
+              },
+              "recipient": {
+                "enum": [
+                  "agent",
+                  "environment"
+                ]
+              }
+            },
+            "required": [
+              "name",
+              "recipient"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 100
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "id",
+        "agent",
+        "environment",
+        "scenarios",
+        "repetitions",
+        "limits",
+        "evidenceProfile",
+        "capturePolicy",
+        "secretBindings"
+      ],
+      "additionalProperties": false
+    },
+    "scenario": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "trial-runner/scenario/v1"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1048576
+        },
+        "fixture": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[A-Za-z0-9_.:-]+$"
+              },
+              "role": {
+                "const": "user"
+              },
+              "content": {
+                "type": "string",
+                "maxLength": 1048576
+              }
+            },
+            "required": [
+              "id",
+              "role",
+              "content"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 20,
+          "minItems": 1
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "origin": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "exposure": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            }
+          },
+          "required": [
+            "origin",
+            "exposure"
+          ],
+          "additionalProperties": false
+        },
+        "externalCriterionRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 1048576
+          },
+          "maxItems": 100,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "id",
+        "description",
+        "messages",
+        "provenance",
+        "externalCriterionRefs"
+      ],
+      "additionalProperties": false
+    },
+    "profile": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "trial-runner/evidence-profile/v1"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "captureBoundary": {
+          "type": "string",
+          "maxLength": 1048576
+        },
+        "required": {
+          "type": "object",
+          "properties": {
+            "conversation": {
+              "type": "boolean"
+            },
+            "routedToolEvents": {
+              "type": "boolean"
+            },
+            "initialState": {
+              "type": "boolean"
+            },
+            "finalState": {
+              "type": "boolean"
+            },
+            "stableFinalState": {
+              "type": "boolean"
+            },
+            "localArtifactIdentity": {
+              "type": "boolean"
+            },
+            "terminalOperationAccounting": {
+              "type": "boolean"
+            },
+            "modelUsage": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "conversation",
+            "routedToolEvents",
+            "initialState",
+            "finalState",
+            "stableFinalState",
+            "localArtifactIdentity",
+            "terminalOperationAccounting"
+          ],
+          "additionalProperties": false
+        },
+        "modelCapture": {
+          "enum": [
+            "not_applicable",
+            "reported",
+            "accounted"
+          ]
+        },
+        "modelCaptureReason": {
+          "type": "string",
+          "maxLength": 1048576
+        },
+        "terminalRules": {
+          "type": "object",
+          "properties": {
+            "not_started": {
+              "const": "incomplete"
+            },
+            "finished": {
+              "const": "require_all_declared_observations"
+            },
+            "agent_error": {
+              "const": "require_error_event_and_all_declared_observations"
+            },
+            "timed_out": {
+              "const": "require_timeout_event_and_all_declared_observations"
+            },
+            "cancelled": {
+              "const": "require_cancellation_event_and_all_declared_observations"
+            },
+            "infrastructure_error": {
+              "const": "incomplete"
+            }
+          },
+          "required": [
+            "not_started",
+            "finished",
+            "agent_error",
+            "timed_out",
+            "cancelled",
+            "infrastructure_error"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "id",
+        "captureBoundary",
+        "required",
+        "modelCapture",
+        "modelCaptureReason",
+        "terminalRules"
+      ],
+      "additionalProperties": false
+    },
+    "tool": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "name",
+        "input",
+        "output"
+      ],
+      "additionalProperties": false
+    },
+    "tools": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/tool"
+      },
+      "maxItems": 100
+    },
+    "snapshot": {
+      "type": "object",
+      "properties": {
+        "state": {},
+        "stable": {
+          "type": "boolean"
+        },
+        "pendingOperations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9_.:-]+$"
+          },
+          "maxItems": 10000,
+          "uniqueItems": true
+        },
+        "observedAt": {
+          "type": "string",
+          "maxLength": 1048576
+        }
+      },
+      "required": [
+        "state",
+        "stable",
+        "pendingOperations",
+        "observedAt"
+      ],
+      "additionalProperties": false
+    },
+    "execution": {
+      "enum": [
+        "not_started",
+        "finished",
+        "agent_error",
+        "timed_out",
+        "cancelled",
+        "environment_error",
+        "adapter_error",
+        "protocol_error",
+        "runner_error"
+      ]
+    },
+    "cleanup": {
+      "enum": [
+        "succeeded",
+        "failed",
+        "unknown"
+      ]
+    },
+    "outcome": {
+      "enum": [
+        "known_result",
+        "known_failure",
+        "outcome_unknown",
+        "not_dispatched"
+      ]
+    },
+    "operation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "logicalCallId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "boundary": {
+          "enum": [
+            "tool",
+            "model"
+          ]
+        },
+        "owner": {
+          "enum": [
+            "runner",
+            "agent",
+            "environment"
+          ]
+        },
+        "observed": {
+          "type": "boolean"
+        },
+        "outcome": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/outcome"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "logicalCallId",
+        "boundary",
+        "owner",
+        "observed",
+        "outcome"
+      ],
+      "additionalProperties": false
+    },
+    "event": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "schemaVersion": {
+              "const": "trial-runner/event/v1"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "recordedAt": {
+              "type": "string",
+              "maxLength": 1048576
+            },
+            "producerTimestamp": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 1048576
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "runId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "turnId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "operationId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "logicalCallId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "parentOperationId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "source": {
+              "enum": [
+                "runner_observed",
+                "adapter_reported",
+                "environment_observed",
+                "candidate_claim"
+              ]
+            },
+            "kind": {
+              "const": "trial.started"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "scenarioId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                "repetition": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 99
+                }
+              },
+              "required": [
+                "scenarioId",
+                "repetition"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "schemaVersion",
+            "sequence",
+            "recordedAt",
+            "producerTimestamp",
+            "runId",
+            "trialId",
+            "turnId",
+            "operationId",
+            "logicalCallId",
+            "parentOperationId",
+            "source",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schemaVersion": {
+              "const": "trial-runner/event/v1"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "recordedAt": {
+              "type": "string",
+              "maxLength": 1048576
+            },
+            "producerTimestamp": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 1048576
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "runId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "turnId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "operationId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "logicalCallId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "parentOperationId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "source": {
+              "enum": [
+                "runner_observed",
+                "adapter_reported",
+                "environment_observed",
+                "candidate_claim"
+              ]
+            },
+            "kind": {
+              "const": "trial.terminal"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "execution": {
+                  "$ref": "#/$defs/execution"
+                },
+                "reason": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 1048576
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "execution",
+                "reason"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "schemaVersion",
+            "sequence",
+            "recordedAt",
+            "producerTimestamp",
+            "runId",
+            "trialId",
+            "turnId",
+            "operationId",
+            "logicalCallId",
+            "parentOperationId",
+            "source",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schemaVersion": {
+              "const": "trial-runner/event/v1"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "recordedAt": {
+              "type": "string",
+              "maxLength": 1048576
+            },
+            "producerTimestamp": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 1048576
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "runId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "turnId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "operationId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "logicalCallId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "parentOperationId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "source": {
+              "enum": [
+                "runner_observed",
+                "adapter_reported",
+                "environment_observed",
+                "candidate_claim"
+              ]
+            },
+            "kind": {
+              "const": "user.turn"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "content": {
+                  "type": "string",
+                  "maxLength": 1048576
+                }
+              },
+              "required": [
+                "content"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "schemaVersion",
+            "sequence",
+            "recordedAt",
+            "producerTimestamp",
+            "runId",
+            "trialId",
+            "turnId",
+            "operationId",
+            "logicalCallId",
+            "parentOperationId",
+            "source",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schemaVersion": {
+              "const": "trial-runner/event/v1"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "recordedAt": {
+              "type": "string",
+              "maxLength": 1048576
+            },
+            "producerTimestamp": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 1048576
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "runId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "turnId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "operationId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "logicalCallId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "parentOperationId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "source": {
+              "enum": [
+                "runner_observed",
+                "adapter_reported",
+                "environment_observed",
+                "candidate_claim"
+              ]
+            },
+            "kind": {
+              "const": "assistant.turn"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "content": {
+                  "type": "string",
+                  "maxLength": 1048576
+                },
+                "modelOperations": {
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128,
+                        "pattern": "^[A-Za-z0-9_.:-]+$"
+                      },
+                      "uniqueItems": true,
+                      "maxItems": 10000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "content"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "schemaVersion",
+            "sequence",
+            "recordedAt",
+            "producerTimestamp",
+            "runId",
+            "trialId",
+            "turnId",
+            "operationId",
+            "logicalCallId",
+            "parentOperationId",
+            "source",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schemaVersion": {
+              "const": "trial-runner/event/v1"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "recordedAt": {
+              "type": "string",
+              "maxLength": 1048576
+            },
+            "producerTimestamp": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 1048576
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "runId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "turnId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "operationId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "logicalCallId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "parentOperationId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "source": {
+              "enum": [
+                "runner_observed",
+                "adapter_reported",
+                "environment_observed",
+                "candidate_claim"
+              ]
+            },
+            "kind": {
+              "const": "agent.error"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "maxLength": 1048576
+                }
+              },
+              "required": [
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "schemaVersion",
+            "sequence",
+            "recordedAt",
+            "producerTimestamp",
+            "runId",
+            "trialId",
+            "turnId",
+            "operationId",
+            "logicalCallId",
+            "parentOperationId",
+            "source",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schemaVersion": {
+              "const": "trial-runner/event/v1"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "recordedAt": {
+              "type": "string",
+              "maxLength": 1048576
+            },
+            "producerTimestamp": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 1048576
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "runId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "turnId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "operationId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "logicalCallId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "parentOperationId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "source": {
+              "enum": [
+                "runner_observed",
+                "adapter_reported",
+                "environment_observed",
+                "candidate_claim"
+              ]
+            },
+            "kind": {
+              "const": "runtime.error"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "maxLength": 1048576
+                },
+                "execution": {
+                  "$ref": "#/$defs/execution"
+                }
+              },
+              "required": [
+                "message",
+                "execution"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "schemaVersion",
+            "sequence",
+            "recordedAt",
+            "producerTimestamp",
+            "runId",
+            "trialId",
+            "turnId",
+            "operationId",
+            "logicalCallId",
+            "parentOperationId",
+            "source",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schemaVersion": {
+              "const": "trial-runner/event/v1"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "recordedAt": {
+              "type": "string",
+              "maxLength": 1048576
+            },
+            "producerTimestamp": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 1048576
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "runId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "turnId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "operationId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "logicalCallId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "parentOperationId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "source": {
+              "enum": [
+                "runner_observed",
+                "adapter_reported",
+                "environment_observed",
+                "candidate_claim"
+              ]
+            },
+            "kind": {
+              "const": "operation.dispatch_intent"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "boundary": {
+                  "enum": [
+                    "tool",
+                    "model"
+                  ]
+                },
+                "owner": {
+                  "enum": [
+                    "runner",
+                    "agent",
+                    "environment"
+                  ]
+                },
+                "name": {
+                  "type": "string",
+                  "maxLength": 1048576
+                },
+                "args": {}
+              },
+              "required": [
+                "boundary",
+                "owner",
+                "name",
+                "args"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "schemaVersion",
+            "sequence",
+            "recordedAt",
+            "producerTimestamp",
+            "runId",
+            "trialId",
+            "turnId",
+            "operationId",
+            "logicalCallId",
+            "parentOperationId",
+            "source",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schemaVersion": {
+              "const": "trial-runner/event/v1"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "recordedAt": {
+              "type": "string",
+              "maxLength": 1048576
+            },
+            "producerTimestamp": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 1048576
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "runId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "turnId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "operationId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "logicalCallId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "parentOperationId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "source": {
+              "enum": [
+                "runner_observed",
+                "adapter_reported",
+                "environment_observed",
+                "candidate_claim"
+              ]
+            },
+            "kind": {
+              "const": "operation.dispatch_observed"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {},
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "schemaVersion",
+            "sequence",
+            "recordedAt",
+            "producerTimestamp",
+            "runId",
+            "trialId",
+            "turnId",
+            "operationId",
+            "logicalCallId",
+            "parentOperationId",
+            "source",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schemaVersion": {
+              "const": "trial-runner/event/v1"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "recordedAt": {
+              "type": "string",
+              "maxLength": 1048576
+            },
+            "producerTimestamp": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 1048576
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "runId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "turnId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "operationId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "logicalCallId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "parentOperationId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "source": {
+              "enum": [
+                "runner_observed",
+                "adapter_reported",
+                "environment_observed",
+                "candidate_claim"
+              ]
+            },
+            "kind": {
+              "const": "operation.finished"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "outcome": {
+                  "$ref": "#/$defs/outcome"
+                },
+                "value": {},
+                "error": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 1048576
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "model": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/modelObservation"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "outcome",
+                "value",
+                "error"
+              ],
+              "additionalProperties": false,
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "outcome": {
+                        "const": "known_result"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "error": {
+                        "type": "null"
+                      }
+                    }
+                  },
+                  "else": {
+                    "properties": {
+                      "value": {
+                        "type": "null"
+                      },
+                      "error": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "required": [
+            "schemaVersion",
+            "sequence",
+            "recordedAt",
+            "producerTimestamp",
+            "runId",
+            "trialId",
+            "turnId",
+            "operationId",
+            "logicalCallId",
+            "parentOperationId",
+            "source",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schemaVersion": {
+              "const": "trial-runner/event/v1"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "recordedAt": {
+              "type": "string",
+              "maxLength": 1048576
+            },
+            "producerTimestamp": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 1048576
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "runId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "turnId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "operationId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "logicalCallId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "parentOperationId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "source": {
+              "enum": [
+                "runner_observed",
+                "adapter_reported",
+                "environment_observed",
+                "candidate_claim"
+              ]
+            },
+            "kind": {
+              "const": "capture.gap"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "reason": {
+                  "type": "string",
+                  "maxLength": 1048576
+                }
+              },
+              "required": [
+                "reason"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "schemaVersion",
+            "sequence",
+            "recordedAt",
+            "producerTimestamp",
+            "runId",
+            "trialId",
+            "turnId",
+            "operationId",
+            "logicalCallId",
+            "parentOperationId",
+            "source",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schemaVersion": {
+              "const": "trial-runner/event/v1"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "recordedAt": {
+              "type": "string",
+              "maxLength": 1048576
+            },
+            "producerTimestamp": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 1048576
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "runId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "turnId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "operationId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "logicalCallId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "parentOperationId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "source": {
+              "enum": [
+                "runner_observed",
+                "adapter_reported",
+                "environment_observed",
+                "candidate_claim"
+              ]
+            },
+            "kind": {
+              "const": "diagnostic"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "channel": {
+                  "enum": [
+                    "agent",
+                    "environment"
+                  ]
+                },
+                "text": {
+                  "type": "string",
+                  "maxLength": 1048576
+                }
+              },
+              "required": [
+                "channel",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "schemaVersion",
+            "sequence",
+            "recordedAt",
+            "producerTimestamp",
+            "runId",
+            "trialId",
+            "turnId",
+            "operationId",
+            "logicalCallId",
+            "parentOperationId",
+            "source",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "frame": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "trial-runner/process/v1"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "kind": {
+              "const": "start"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "adapterId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                "adapterVersion": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                "artifactSha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "settings": {
+                  "type": "object"
+                },
+                "tools": {
+                  "$ref": "#/$defs/tools"
+                },
+                "limits": {
+                  "$ref": "#/$defs/limits"
+                },
+                "bindings": {},
+                "modelCapture": {
+                  "enum": [
+                    "not_applicable",
+                    "reported",
+                    "accounted"
+                  ]
+                }
+              },
+              "required": [
+                "adapterId",
+                "adapterVersion",
+                "artifactSha256",
+                "settings",
+                "tools",
+                "limits",
+                "bindings",
+                "modelCapture"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "protocol",
+            "trialId",
+            "messageId",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "trial-runner/process/v1"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "replyTo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "kind": {
+              "const": "ready"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "adapterId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                "adapterVersion": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                "capabilities": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "^[A-Za-z0-9_.:-]+$"
+                  },
+                  "maxItems": 100,
+                  "uniqueItems": true
+                },
+                "artifactSha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "modelCapture": {
+                  "enum": [
+                    "not_applicable",
+                    "reported",
+                    "accounted"
+                  ]
+                }
+              },
+              "required": [
+                "adapterId",
+                "adapterVersion",
+                "capabilities",
+                "artifactSha256",
+                "modelCapture"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "protocol",
+            "trialId",
+            "messageId",
+            "replyTo",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "trial-runner/process/v1"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "kind": {
+              "const": "user_turn"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "turnId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                "content": {
+                  "type": "string",
+                  "maxLength": 1048576
+                }
+              },
+              "required": [
+                "turnId",
+                "content"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "protocol",
+            "trialId",
+            "messageId",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "trial-runner/process/v1"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "kind": {
+              "const": "tool_call"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "turnId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                "tool": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                "args": {},
+                "logicalCallId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9_.:-]+$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "turnId",
+                "tool",
+                "args",
+                "logicalCallId"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "protocol",
+            "trialId",
+            "messageId",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "trial-runner/process/v1"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "replyTo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "kind": {
+              "const": "tool_result"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "operationId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                "outcome": {
+                  "$ref": "#/$defs/outcome"
+                },
+                "value": {},
+                "error": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 1048576
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "operationId",
+                "outcome",
+                "value",
+                "error"
+              ],
+              "additionalProperties": false,
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "outcome": {
+                        "const": "known_result"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "error": {
+                        "type": "null"
+                      }
+                    }
+                  },
+                  "else": {
+                    "properties": {
+                      "value": {
+                        "type": "null"
+                      },
+                      "error": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "required": [
+            "protocol",
+            "trialId",
+            "messageId",
+            "replyTo",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "trial-runner/process/v1"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "replyTo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "kind": {
+              "const": "turn_finished"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "turnId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                "output": {
+                  "type": "string",
+                  "maxLength": 1048576
+                },
+                "outstandingOperationIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "^[A-Za-z0-9_.:-]+$"
+                  },
+                  "maxItems": 10000,
+                  "uniqueItems": true
+                },
+                "modelOperations": {
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128,
+                        "pattern": "^[A-Za-z0-9_.:-]+$"
+                      },
+                      "uniqueItems": true,
+                      "maxItems": 10000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "turnId",
+                "output",
+                "outstandingOperationIds"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "protocol",
+            "trialId",
+            "messageId",
+            "replyTo",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "trial-runner/process/v1"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "kind": {
+              "const": "agent_error"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "maxLength": 1048576
+                }
+              },
+              "required": [
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "protocol",
+            "trialId",
+            "messageId",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "trial-runner/process/v1"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "kind": {
+              "const": "stop"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "reason": {
+                  "type": "string",
+                  "maxLength": 1048576
+                }
+              },
+              "required": [
+                "reason"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "protocol",
+            "trialId",
+            "messageId",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "trial-runner/process/v1"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "replyTo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "kind": {
+              "const": "stopped"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "outstandingOperationIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "^[A-Za-z0-9_.:-]+$"
+                  },
+                  "maxItems": 10000,
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "outstandingOperationIds"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "protocol",
+            "trialId",
+            "messageId",
+            "replyTo",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "trial-runner/process/v1"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "kind": {
+              "const": "event"
+            },
+            "payload": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "const": "operation.dispatch_intent"
+                    },
+                    "operationId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9_.:-]+$"
+                    },
+                    "logicalCallId": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128,
+                          "pattern": "^[A-Za-z0-9_.:-]+$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "parentOperationId": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128,
+                          "pattern": "^[A-Za-z0-9_.:-]+$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "boundary": {
+                          "enum": [
+                            "tool",
+                            "model"
+                          ]
+                        },
+                        "owner": {
+                          "enum": [
+                            "runner",
+                            "agent",
+                            "environment"
+                          ]
+                        },
+                        "name": {
+                          "type": "string",
+                          "maxLength": 1048576
+                        },
+                        "args": {}
+                      },
+                      "required": [
+                        "boundary",
+                        "owner",
+                        "name",
+                        "args"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "operationId",
+                    "logicalCallId",
+                    "parentOperationId",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "const": "operation.dispatch_observed"
+                    },
+                    "operationId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9_.:-]+$"
+                    },
+                    "logicalCallId": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128,
+                          "pattern": "^[A-Za-z0-9_.:-]+$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "parentOperationId": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128,
+                          "pattern": "^[A-Za-z0-9_.:-]+$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {},
+                      "required": [],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "operationId",
+                    "logicalCallId",
+                    "parentOperationId",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "const": "operation.finished"
+                    },
+                    "operationId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9_.:-]+$"
+                    },
+                    "logicalCallId": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128,
+                          "pattern": "^[A-Za-z0-9_.:-]+$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "parentOperationId": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128,
+                          "pattern": "^[A-Za-z0-9_.:-]+$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "outcome": {
+                          "$ref": "#/$defs/outcome"
+                        },
+                        "value": {},
+                        "error": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "maxLength": 1048576
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "model": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/$defs/modelObservation"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "outcome",
+                        "value",
+                        "error"
+                      ],
+                      "additionalProperties": false,
+                      "allOf": [
+                        {
+                          "if": {
+                            "properties": {
+                              "outcome": {
+                                "const": "known_result"
+                              }
+                            }
+                          },
+                          "then": {
+                            "properties": {
+                              "error": {
+                                "type": "null"
+                              }
+                            }
+                          },
+                          "else": {
+                            "properties": {
+                              "value": {
+                                "type": "null"
+                              },
+                              "error": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "operationId",
+                    "logicalCallId",
+                    "parentOperationId",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": [
+            "protocol",
+            "trialId",
+            "messageId",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "trial-runner/process/v1"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "replyTo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "kind": {
+              "const": "event_ack"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "sequence": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100000
+                }
+              },
+              "required": [
+                "sequence"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "protocol",
+            "trialId",
+            "messageId",
+            "replyTo",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "trial-runner/process/v1"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "kind": {
+              "const": "describe"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "adapterId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                "adapterVersion": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                }
+              },
+              "required": [
+                "adapterId",
+                "adapterVersion"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "protocol",
+            "trialId",
+            "messageId",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "trial-runner/process/v1"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "replyTo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "kind": {
+              "const": "described"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "adapterId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                "adapterVersion": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                "capabilities": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "^[A-Za-z0-9_.:-]+$"
+                  },
+                  "maxItems": 100,
+                  "uniqueItems": true
+                },
+                "tools": {
+                  "$ref": "#/$defs/tools"
+                },
+                "faultModes": {
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "error_before",
+                      "lost_after",
+                      "hang"
+                    ]
+                  },
+                  "maxItems": 3,
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "adapterId",
+                "adapterVersion",
+                "capabilities",
+                "tools",
+                "faultModes"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "protocol",
+            "trialId",
+            "messageId",
+            "replyTo",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "trial-runner/process/v1"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "kind": {
+              "const": "prepare"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "state": {},
+                "settings": {
+                  "type": "object"
+                },
+                "faultPlan": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/fault"
+                  },
+                  "maxItems": 100
+                },
+                "clock": {
+                  "$ref": "#/$defs/clock"
+                }
+              },
+              "required": [
+                "state",
+                "settings",
+                "faultPlan",
+                "clock"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "protocol",
+            "trialId",
+            "messageId",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "trial-runner/process/v1"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "replyTo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "kind": {
+              "const": "prepared"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "leaseId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                "snapshot": {
+                  "$ref": "#/$defs/snapshot"
+                },
+                "bindings": {}
+              },
+              "required": [
+                "leaseId",
+                "snapshot",
+                "bindings"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "protocol",
+            "trialId",
+            "messageId",
+            "replyTo",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "trial-runner/process/v1"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "kind": {
+              "const": "execute"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "operationId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                "tool": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                "args": {}
+              },
+              "required": [
+                "operationId",
+                "tool",
+                "args"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "protocol",
+            "trialId",
+            "messageId",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "trial-runner/process/v1"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "replyTo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "kind": {
+              "const": "executed"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "operationId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                "outcome": {
+                  "$ref": "#/$defs/outcome"
+                },
+                "value": {},
+                "error": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 1048576
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "operationId",
+                "outcome",
+                "value",
+                "error"
+              ],
+              "additionalProperties": false,
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "outcome": {
+                        "const": "known_result"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "error": {
+                        "type": "null"
+                      }
+                    }
+                  },
+                  "else": {
+                    "properties": {
+                      "value": {
+                        "type": "null"
+                      },
+                      "error": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "required": [
+            "protocol",
+            "trialId",
+            "messageId",
+            "replyTo",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "trial-runner/process/v1"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "kind": {
+              "const": "snapshot"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {},
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "protocol",
+            "trialId",
+            "messageId",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "trial-runner/process/v1"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "replyTo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "kind": {
+              "const": "snapshotted"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "snapshot": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/snapshot"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 1048576
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "snapshot",
+                "error"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "protocol",
+            "trialId",
+            "messageId",
+            "replyTo",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "trial-runner/process/v1"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "kind": {
+              "const": "dispose"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {},
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "protocol",
+            "trialId",
+            "messageId",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "trial-runner/process/v1"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "replyTo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "kind": {
+              "const": "disposed"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "$ref": "#/$defs/cleanup"
+                },
+                "resources": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "maxLength": 1048576
+                  },
+                  "maxItems": 100
+                }
+              },
+              "required": [
+                "status",
+                "resources"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "protocol",
+            "trialId",
+            "messageId",
+            "replyTo",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "trial-runner/process/v1"
+            },
+            "trialId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "kind": {
+              "const": "environment_error"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "maxLength": 1048576
+                }
+              },
+              "required": [
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "protocol",
+            "trialId",
+            "messageId",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "manifest": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "trial-runner/evidence/v1"
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "trialId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "scenarioId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "repetition": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99
+        },
+        "planSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "scenarioSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "fixtureSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "execution": {
+          "$ref": "#/$defs/execution"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1048576
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cleanup": {
+          "$ref": "#/$defs/cleanup"
+        },
+        "evidence": {
+          "type": "object",
+          "properties": {
+            "state": {
+              "enum": [
+                "complete",
+                "incomplete"
+              ]
+            },
+            "gaps": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 1048576
+              },
+              "maxItems": 10000,
+              "uniqueItems": true
+            },
+            "profile": {
+              "$ref": "#/$defs/profile"
+            },
+            "redactedPaths": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 1048576
+              },
+              "maxItems": 10000,
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "state",
+            "gaps",
+            "profile",
+            "redactedPaths"
+          ],
+          "additionalProperties": false
+        },
+        "identity": {
+          "type": "object",
+          "properties": {
+            "runnerVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "nodeVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "agentArtifactSha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "environmentArtifactSha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "strength": {
+              "const": "observed_local_artifacts"
+            },
+            "authenticity": {
+              "const": "not_attested"
+            }
+          },
+          "required": [
+            "runnerVersion",
+            "nodeVersion",
+            "agentArtifactSha256",
+            "environmentArtifactSha256",
+            "strength",
+            "authenticity"
+          ],
+          "additionalProperties": false
+        },
+        "fidelity": {
+          "type": "object",
+          "properties": {
+            "boundary": {
+              "type": "string",
+              "maxLength": 1048576
+            },
+            "mode": {
+              "const": "operator_trusted_local"
+            },
+            "modelCoverage": {
+              "enum": [
+                "not_applicable",
+                "reported",
+                "accounted"
+              ]
+            }
+          },
+          "required": [
+            "boundary",
+            "mode",
+            "modelCoverage"
+          ],
+          "additionalProperties": false
+        },
+        "provider": {
+          "type": "object",
+          "properties": {
+            "requested": {},
+            "observed": {},
+            "usage": {},
+            "cost": {}
+          },
+          "required": [
+            "requested",
+            "observed",
+            "usage",
+            "cost"
+          ],
+          "additionalProperties": false
+        },
+        "operations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/operation"
+          },
+          "maxItems": 10000
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/file"
+          },
+          "maxItems": 1000
+        },
+        "parentBundleSha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "runId",
+        "requestId",
+        "trialId",
+        "scenarioId",
+        "repetition",
+        "planSha256",
+        "scenarioSha256",
+        "fixtureSha256",
+        "execution",
+        "reason",
+        "cleanup",
+        "evidence",
+        "identity",
+        "fidelity",
+        "provider",
+        "operations",
+        "files",
+        "parentBundleSha256"
+      ],
+      "additionalProperties": false
+    },
+    "run": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "trial-runner/run/v1"
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "inputSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "state": {
+          "enum": [
+            "accepted",
+            "finished"
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "maxLength": 1048576
+        },
+        "finishedAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1048576
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rerunOf": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "deadlineAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1048576
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "exitCode": {
+          "anyOf": [
+            {
+              "enum": [
+                0,
+                1,
+                2,
+                130
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "trials": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "trialId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[A-Za-z0-9_.:-]+$"
+              },
+              "scenarioId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[A-Za-z0-9_.:-]+$"
+              },
+              "repetition": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 99
+              },
+              "execution": {
+                "$ref": "#/$defs/execution"
+              },
+              "bundleSha256": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              }
+            },
+            "required": [
+              "trialId",
+              "scenarioId",
+              "repetition",
+              "execution",
+              "bundleSha256",
+              "path"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 10000,
+          "minItems": 1
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "runId",
+        "requestId",
+        "inputSha256",
+        "state",
+        "createdAt",
+        "finishedAt",
+        "rerunOf",
+        "deadlineAt",
+        "exitCode",
+        "trials"
+      ],
+      "additionalProperties": false
+    },
+    "assessment": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "trial-runner/assessment-input/v1"
+        },
+        "bundleSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "trialId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "scenarioId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "repetition": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99
+        },
+        "candidateArtifactSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "evidenceState": {
+          "enum": [
+            "complete",
+            "incomplete"
+          ]
+        },
+        "boundary": {
+          "type": "string",
+          "maxLength": 1048576
+        },
+        "authenticity": {
+          "const": "not_attested"
+        },
+        "inputs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "role": {
+                "enum": [
+                  "conversation",
+                  "tool-trajectory",
+                  "initial-state",
+                  "final-state",
+                  "runtime-events"
+                ]
+              },
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "role",
+              "path",
+              "sha256"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 10
+        },
+        "gaps": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 1048576
+          },
+          "maxItems": 10000
+        },
+        "externalCriterionRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 1048576
+          },
+          "maxItems": 100
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "bundleSha256",
+        "trialId",
+        "scenarioId",
+        "repetition",
+        "candidateArtifactSha256",
+        "evidenceState",
+        "boundary",
+        "authenticity",
+        "inputs",
+        "gaps",
+        "externalCriterionRefs"
+      ],
+      "additionalProperties": false
+    },
+    "inspection": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "trial-runner/inspection/v1"
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "runState": {
+          "enum": [
+            "accepted",
+            "finished"
+          ]
+        },
+        "liveness": {
+          "const": "not_checked"
+        },
+        "executionResumed": {
+          "const": false
+        },
+        "trials": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "trialId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[A-Za-z0-9_.:-]+$"
+              },
+              "scenarioId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[A-Za-z0-9_.:-]+$"
+              },
+              "repetition": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 99
+              },
+              "state": {
+                "enum": [
+                  "not_observed",
+                  "unfinished",
+                  "finalized",
+                  "invalid"
+                ]
+              },
+              "indexExecution": {
+                "$ref": "#/$defs/execution"
+              },
+              "terminalExecution": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/execution"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "journal": {
+                "type": "object",
+                "properties": {
+                  "completeEvents": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100000
+                  },
+                  "completeBytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 67108864
+                  },
+                  "trailingBytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 67108864
+                  },
+                  "sha256": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "completeEvents",
+                  "completeBytes",
+                  "trailingBytes",
+                  "sha256"
+                ],
+                "additionalProperties": false
+              },
+              "bundle": {
+                "type": "object",
+                "properties": {
+                  "sha256": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "verified": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "sha256",
+                  "verified"
+                ],
+                "additionalProperties": false
+              },
+              "operations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9_.:-]+$"
+                    },
+                    "logicalCallId": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128,
+                          "pattern": "^[A-Za-z0-9_.:-]+$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "boundary": {
+                      "enum": [
+                        "tool",
+                        "model"
+                      ]
+                    },
+                    "owner": {
+                      "enum": [
+                        "runner",
+                        "agent",
+                        "environment"
+                      ]
+                    },
+                    "dispatch": {
+                      "enum": [
+                        "observed",
+                        "not_dispatched",
+                        "unknown"
+                      ]
+                    },
+                    "recordedOutcome": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/outcome"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "outcome": {
+                      "$ref": "#/$defs/outcome"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "logicalCallId",
+                    "boundary",
+                    "owner",
+                    "dispatch",
+                    "recordedOutcome",
+                    "outcome"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 100000
+              },
+              "gaps": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 1048576
+                },
+                "maxItems": 10000
+              }
+            },
+            "required": [
+              "trialId",
+              "scenarioId",
+              "repetition",
+              "state",
+              "indexExecution",
+              "terminalExecution",
+              "journal",
+              "bundle",
+              "operations",
+              "gaps"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 10000
+        },
+        "coverage": {
+          "enum": [
+            "anchored",
+            "unverified"
+          ]
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "runId",
+        "requestId",
+        "runState",
+        "liveness",
+        "executionResumed",
+        "trials",
+        "coverage"
+      ],
+      "additionalProperties": false
+    },
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "requestId",
+        "runId",
+        "inputSha256",
+        "acceptanceSha256"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "trial-runner/request/v1"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "inputSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "acceptanceSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "redaction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "omitFiles"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "trial-runner/redaction/v1"
+        },
+        "omitFiles": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1000,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          }
+        }
+      }
+    },
+    "derivative": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "parentBundleSha256",
+        "runId",
+        "requestId",
+        "trialId",
+        "scenarioId",
+        "repetition",
+        "execution",
+        "cleanup",
+        "evidence",
+        "files",
+        "authenticity"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "trial-runner/redacted-evidence/v1"
+        },
+        "parentBundleSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "trialId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "scenarioId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "repetition": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99
+        },
+        "execution": {
+          "$ref": "#/$defs/execution"
+        },
+        "cleanup": {
+          "$ref": "#/$defs/cleanup"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/file"
+          },
+          "maxItems": 1000
+        },
+        "authenticity": {
+          "const": "not_attested"
+        },
+        "evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "gaps",
+            "redactedPaths"
+          ],
+          "properties": {
+            "state": {
+              "const": "incomplete"
+            },
+            "gaps": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 1048576
+              },
+              "maxItems": 10000,
+              "uniqueItems": true
+            },
+            "redactedPaths": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 1048576
+              },
+              "maxItems": 10000,
+              "uniqueItems": true
+            }
+          }
+        }
+      }
+    },
+    "modelRequest": {
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "maxLength": 1048576,
+          "minLength": 1
+        },
+        "model": {
+          "type": "string",
+          "maxLength": 1048576,
+          "minLength": 1
+        },
+        "settings": {
+          "type": "object"
+        },
+        "input": {}
+      },
+      "required": [
+        "provider",
+        "model",
+        "settings",
+        "input"
+      ],
+      "additionalProperties": false
+    },
+    "modelObservation": {
+      "type": "object",
+      "properties": {
+        "provider": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1048576,
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1048576,
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "modelRevision": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1048576,
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "requestId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1048576,
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "usage": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "inputTokens": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "outputTokens": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "source": {
+                  "enum": [
+                    "provider_reported",
+                    "adapter_estimated"
+                  ]
+                }
+              },
+              "required": [
+                "inputTokens",
+                "outputTokens",
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cost": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000000000000.0
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "currency": {
+                  "type": "string",
+                  "maxLength": 1048576,
+                  "minLength": 1
+                },
+                "source": {
+                  "enum": [
+                    "provider_reported",
+                    "adapter_estimated"
+                  ]
+                },
+                "pricingId": {
+                  "type": "string",
+                  "maxLength": 1048576,
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "amount",
+                "currency",
+                "source",
+                "pricingId"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "provider",
+        "model",
+        "modelRevision",
+        "requestId",
+        "usage",
+        "cost"
+      ],
+      "additionalProperties": false
+    },
+    "setup": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "trial-runner/setup/v1"
+        },
+        "template": {
+          "const": "node-function/v1"
+        },
+        "agent": {
+          "type": "object",
+          "properties": {
+            "entrypoint": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "files": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "maxItems": 128,
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "dependencyMode": {
+              "const": "declared-files-only"
+            },
+            "modelCapture": {
+              "enum": [
+                "not_applicable",
+                "reported",
+                "accounted"
+              ]
+            },
+            "modelCaptureReason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "requireUsage": {
+              "type": "boolean"
+            },
+            "secretBindings": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Z0-9_]{0,127}$"
+              },
+              "maxItems": 32,
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "entrypoint",
+            "files",
+            "dependencyMode",
+            "modelCapture",
+            "modelCaptureReason",
+            "requireUsage",
+            "secretBindings"
+          ],
+          "additionalProperties": false
+        },
+        "environment": {
+          "type": "object",
+          "properties": {
+            "template": {
+              "const": "reference-inventory/v1"
+            }
+          },
+          "required": [
+            "template"
+          ],
+          "additionalProperties": false
+        },
+        "scenario": {
+          "$ref": "#/$defs/scenario"
+        },
+        "repetitions": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "limits": {
+          "$ref": "#/$defs/limits"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "template",
+        "agent",
+        "environment",
+        "scenario",
+        "repetitions"
+      ],
+      "additionalProperties": false
+    },
+    "setupTemplate": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "const": "node-function/v1"
+        },
+        "environment": {
+          "const": "reference-inventory/v1"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "id",
+        "environment",
+        "sha256"
+      ],
+      "additionalProperties": false
+    },
+    "discovery": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "trial-runner/discovery/v1"
+        },
+        "status": {
+          "enum": [
+            "declared",
+            "blocked"
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/file"
+          },
+          "maxItems": 2
+        },
+        "template": {
+          "$ref": "#/$defs/setupTemplate"
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "enum": [
+                  "module-type",
+                  "command",
+                  "dependency",
+                  "connection"
+                ]
+              },
+              "source": {
+                "$ref": "#/$defs/file"
+              },
+              "fact": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "interpretation": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "certainty": {
+                "enum": [
+                  "observed",
+                  "inferred",
+                  "user_declared",
+                  "validated"
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "source",
+              "fact",
+              "interpretation",
+              "certainty"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 256
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "argv": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "const": "node"
+                  },
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  }
+                ],
+                "items": false,
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "source": {
+                "$ref": "#/$defs/file"
+              },
+              "certainty": {
+                "const": "inferred"
+              }
+            },
+            "required": [
+              "argv",
+              "source",
+              "certainty"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 66
+        },
+        "unresolved": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z_]{1,64}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 32
+        },
+        "exclusions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "maxItems": 16
+        },
+        "execution": {
+          "const": "not_run"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "status",
+        "sources",
+        "template",
+        "findings",
+        "candidates",
+        "unresolved",
+        "exclusions",
+        "execution"
+      ],
+      "additionalProperties": false
+    },
+    "preparation": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "trial-runner/preparation/v1"
+        },
+        "status": {
+          "enum": [
+            "prepared",
+            "blocked"
+          ]
+        },
+        "template": {
+          "$ref": "#/$defs/setupTemplate"
+        },
+        "discoverySha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/file"
+          },
+          "maxItems": 130
+        },
+        "outputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/file"
+          },
+          "maxItems": 160
+        },
+        "plan": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "const": "plan.json"
+                },
+                "inputSha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "inputSha256"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "execution": {
+          "const": "not_run"
+        },
+        "nextSteps": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            "maxItems": 12
+          },
+          "maxItems": 6
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "status",
+        "template",
+        "discoverySha256",
+        "sources",
+        "outputs",
+        "plan",
+        "execution",
+        "nextSteps"
+      ],
+      "additionalProperties": false
+    },
+    "setupDraft": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "trial-runner/setup-draft/v1"
+        },
+        "template": {
+          "const": "node-function/v1"
+        },
+        "entrypointCandidates": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "maxItems": 66
+        },
+        "environmentTemplate": {
+          "type": "null"
+        },
+        "modelCapture": {
+          "type": "null"
+        },
+        "instructions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "maxItems": 8
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "template",
+        "entrypointCandidates",
+        "environmentTemplate",
+        "modelCapture",
+        "instructions"
+      ],
+      "additionalProperties": false
+    },
+    "setupProvenance": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "trial-runner/setup-provenance/v1"
+        },
+        "template": {
+          "$ref": "#/$defs/setupTemplate"
+        },
+        "discoverySha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "sources": {
+          "type": "array",
+          "maxItems": 130,
+          "items": {
+            "$ref": "#/$defs/file"
+          }
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "template",
+        "discoverySha256",
+        "sources"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,51 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
+import { tmpdir } from "node:os";
+import { fileURLToPath } from "node:url";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import type { RunResult } from "../src/core/run.js";
+import { readableRun, displayValue } from "../src/cli/format-run.js";
+import { inspectRun } from "../src/core/inspect.js";
+const exec = promisify(execFile);
+const cli = fileURLToPath(new URL("../src/cli/main.js", import.meta.url));
+
+test("published CLI flow initializes, validates, runs, verifies, exports and shows evidence", async t => {
+  const root = await fs.mkdtemp(path.join(tmpdir(), "trial-cli-"));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const invoke = (...args: string[]) => exec(process.execPath, [cli, ...args], { cwd: root, maxBuffer: 1024 * 1024 });
+  await invoke("init", "example");
+  await assert.rejects(invoke("init", "example"));
+  const plan = path.join(root, "example", "plan.json");
+  assert.match((await invoke("validate", plan)).stdout, /No adapter executed/);
+  const output = JSON.parse((await invoke("run", plan, "--request", "first")).stdout) as RunResult;
+  assert.equal(output.index.exitCode, 0);
+  const bundle = path.join(output.root, output.index.trials[0]!.path);
+  assert.match((await invoke("verify", bundle, "--sha256", output.index.trials[0]!.bundleSha256!)).stdout, /evidence=complete/);
+  await invoke("export", bundle, "--format", "assessment-input", "--out", "assessment.json");
+  const exported = JSON.parse(await fs.readFile(path.join(root, "assessment.json"), "utf8"));
+  assert.equal(exported.bundleSha256, output.index.trials[0]!.bundleSha256); assert.equal("verdict" in exported, false);
+  const shown = JSON.parse((await invoke("show", "--request", "first")).stdout) as RunResult;
+  assert.equal(shown.index.runId, output.index.runId);
+  const readable = (await invoke("show", "--request", "first", "--format", "text")).stdout;
+  assert.match(readable, /Execution: finished; evidence: complete; cleanup: succeeded/);
+  assert.match(readable, /Assistant \(candidate claim\)/);
+  assert.match(readable, /final-state.json \(environment observation\)/);
+  assert.match(readable, /No behavioral verdict has been created/);
+  await assert.rejects(invoke("show", "--request", "first", "--format", "html"));
+  const inspection = await inspectRun(output.root, output.index);
+  inspection.trials[0]!.gaps.push("index_update_missing");
+  assert.match(await readableRun(output, inspection), /Inspection gaps: \["index_update_missing"\]/);
+  assert.match(readable, /Recorded operation intents:/);
+  assert.doesNotMatch(readable, /Physical operations:/);
+  await assert.rejects(invoke("run", "missing.json", "--request", "invalid"), (error: unknown) => (error as { code: number }).code === 1);
+});
+
+test("readable evidence escapes terminal controls and labels display shortening", () => {
+  const shown = displayValue("candidate\x1b[2J\n\u009b31m");
+  assert.doesNotMatch(shown, /[\x00-\x1f\x7f-\x9f]/);
+  assert.match(shown, /\\u001b/);
+  assert.match(displayValue("x".repeat(2000)), /display shortened; full evidence retained/);
+});

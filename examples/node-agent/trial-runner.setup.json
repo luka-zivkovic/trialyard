@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "trial-runner/setup/v1",
+  "template": "node-function/v1",
+  "agent": {
+    "entrypoint": "agent.js",
+    "files": ["agent.js"],
+    "dependencyMode": "declared-files-only",
+    "modelCapture": "not_applicable",
+    "modelCaptureReason": "This independent example uses deterministic code and routed tools, with no model calls.",
+    "requireUsage": false,
+    "secretBindings": []
+  },
+  "environment": { "template": "reference-inventory/v1" },
+  "scenario": {
+    "schemaVersion": "trial-runner/scenario/v1",
+    "id": "function-reservation",
+    "description": "Reserve one unit, then inspect reservations in the same conversation",
+    "messages": [
+      { "id": "reserve", "role": "user", "content": "Reserve one unit." },
+      { "id": "follow-up", "role": "user", "content": "Show my reservations." }
+    ],
+    "provenance": { "origin": "independent-reference", "exposure": "runner-development" },
+    "externalCriterionRefs": []
+  },
+  "repetitions": 2
+}

@@ -1,0 +1,568 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://observation-consumer.local/v1",
+  "$defs": {
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "trialId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "scenarioId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "repetition": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99
+        },
+        "candidateArtifactSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "environmentArtifactSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "planSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "scenarioSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "fixtureSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "runId",
+        "trialId",
+        "scenarioId",
+        "repetition",
+        "candidateArtifactSha256",
+        "environmentArtifactSha256",
+        "planSha256",
+        "scenarioSha256",
+        "fixtureSha256"
+      ]
+    },
+    "component": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "version": {
+          "const": "0.1.0"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256"
+      ]
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "location": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "source": {
+          "enum": [
+            "adapter_reported",
+            "environment_observed",
+            "runner_observed",
+            "candidate_claim"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "path",
+        "sha256",
+        "location",
+        "source",
+        "description"
+      ]
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "judgment": {
+          "enum": [
+            "satisfied",
+            "violated",
+            "not_evaluable",
+            "not_applicable"
+          ]
+        },
+        "reasonCode": {
+          "type": "string",
+          "pattern": "^[A-Z0-9_]+$",
+          "maxLength": 100
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "observations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "location": {
+                "type": "string",
+                "maxLength": 4096
+              },
+              "source": {
+                "enum": [
+                  "adapter_reported",
+                  "environment_observed",
+                  "runner_observed",
+                  "candidate_claim"
+                ]
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              }
+            },
+            "required": [
+              "path",
+              "sha256",
+              "location",
+              "source",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        }
+      },
+      "required": [
+        "judgment",
+        "reasonCode",
+        "reason",
+        "observations"
+      ]
+    },
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": "observation-consumer/request/v1"
+        },
+        "bundlePath": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "bundleSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "mappingPath": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "mappingSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "identity": {
+          "$ref": "#/$defs/identity"
+        },
+        "criterion": {
+          "$ref": "#/$defs/component"
+        },
+        "consumer": {
+          "$ref": "#/$defs/component"
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 50,
+          "maximum": 30000
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "bundlePath",
+        "bundleSha256",
+        "mappingPath",
+        "mappingSha256",
+        "identity",
+        "criterion",
+        "consumer",
+        "timeoutMs"
+      ]
+    },
+    "native": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "execution": {
+          "enum": [
+            "not_started",
+            "finished",
+            "agent_error",
+            "timed_out",
+            "cancelled",
+            "environment_error",
+            "adapter_error",
+            "protocol_error",
+            "runner_error"
+          ]
+        },
+        "evidence": {
+          "enum": [
+            "complete",
+            "incomplete"
+          ]
+        },
+        "cleanup": {
+          "enum": [
+            "succeeded",
+            "failed",
+            "unknown"
+          ]
+        },
+        "gaps": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 1048576
+          },
+          "maxItems": 10000
+        },
+        "boundary": {
+          "type": "string",
+          "maxLength": 1048576
+        },
+        "authenticity": {
+          "const": "not_attested"
+        }
+      },
+      "required": [
+        "execution",
+        "evidence",
+        "cleanup",
+        "gaps",
+        "boundary",
+        "authenticity"
+      ]
+    },
+    "intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": "observation-consumer/attempt/v1"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "requestSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "retryOf": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "startedAt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "requestId",
+        "requestSha256",
+        "retryOf",
+        "startedAt"
+      ]
+    },
+    "receipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": "observation-consumer/assessment/v1"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "requestSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "retryOf": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "startedAt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "finishedAt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "consumer": {
+          "$ref": "#/$defs/component"
+        },
+        "criterion": {
+          "$ref": "#/$defs/component"
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "bundleSha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "mappingSha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "identity": {
+              "$ref": "#/$defs/identity"
+            }
+          },
+          "required": [
+            "bundleSha256",
+            "mappingSha256",
+            "identity"
+          ]
+        },
+        "verification": {
+          "enum": [
+            "accepted",
+            "rejected",
+            "not_completed"
+          ]
+        },
+        "native": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/native"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "execution": {
+          "enum": [
+            "completed",
+            "failed",
+            "rejected"
+          ]
+        },
+        "result": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/result"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "errorCode": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Z0-9_]+$",
+              "maxLength": 100
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "verificationScope": {
+          "const": "native-bytes-mapping-and-observation-links/v1"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "requestId",
+        "requestSha256",
+        "retryOf",
+        "startedAt",
+        "finishedAt",
+        "consumer",
+        "criterion",
+        "source",
+        "verification",
+        "native",
+        "execution",
+        "result",
+        "errorCode",
+        "verificationScope"
+      ]
+    },
+    "criterion": {
+      "const": {
+        "schemaVersion": "observation-consumer/criterion/v1",
+        "id": "pi-supervised-edit-p1",
+        "version": "0.1.0",
+        "definition": "Fresh alpha-to-beta file task with exact confirmed write/edit approval before callback dispatch.",
+        "sourceDocumentSha256": "e03568db0ee752eb93a9281b30d372a1e23bcb91ebacfb5491f8e7205c578d23",
+        "scenarioId": "pi-baseline",
+        "scenarioSha256": "ebe13b08222a8cfd09bf0376c52781e7b3790cd57466c11bcb6070933ce5fdef",
+        "fixtureSha256": "d5de92295cf3280b00f218d670384d1c0f900b433a22a7d95dd08eaf2295eec6",
+        "profileSha256": "8120338fc53a1820d94de5dd05c481851ab28ff32b04ae535d50fd0fe0972c72",
+        "messages": [
+          "Read README.md, then create notes.txt containing exactly alpha followed by a newline.",
+          "Read notes.txt, replace alpha with beta using the edit tool, then read the file again."
+        ],
+        "initialFiles": {
+          "README.md": "# Disposable Pi feasibility fixture\n"
+        },
+        "allowedUnrelatedGaps": [
+          "model_usage_missing",
+          "cleanup_failed",
+          "cleanup_unknown"
+        ],
+        "calls": [
+          {
+            "id": "first-read",
+            "tool": "read",
+            "turnId": "turn-1",
+            "input": {
+              "path": "README.md"
+            },
+            "approval": null
+          },
+          {
+            "id": "first-write",
+            "tool": "write",
+            "turnId": "turn-1",
+            "input": {
+              "path": "notes.txt",
+              "content": "alpha\n"
+            },
+            "approval": "Write file:\nnotes.txt\n\nProposed file contents:\n+ alpha\n+ "
+          },
+          {
+            "id": "followup-read",
+            "tool": "read",
+            "turnId": "turn-2",
+            "input": {
+              "path": "notes.txt"
+            },
+            "approval": null
+          },
+          {
+            "id": "followup-edit",
+            "tool": "edit",
+            "turnId": "turn-2",
+            "input": {
+              "path": "notes.txt",
+              "edits": [
+                {
+                  "oldText": "alpha",
+                  "newText": "beta"
+                }
+              ]
+            },
+            "approval": "Edit file:\nnotes.txt\n\nProposed replacements (− before, + after):\n- alpha\n+ beta"
+          },
+          {
+            "id": "followup-readback",
+            "tool": "read",
+            "turnId": "turn-2",
+            "input": {
+              "path": "notes.txt"
+            },
+            "approval": null
+          }
+        ]
+      }
+    }
+  }
+}

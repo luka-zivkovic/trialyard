@@ -1,0 +1,6 @@
+{
+  "name": "independent-node-agent-example",
+  "private": true,
+  "type": "module",
+  "main": "agent.js"
+}

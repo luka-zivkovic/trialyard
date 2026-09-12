@@ -1,0 +1,506 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trial-runner.invalid/contracts/connection/v1",
+  "$defs": {
+    "file": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 16777216
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "path",
+        "bytes",
+        "sha256"
+      ],
+      "additionalProperties": false
+    },
+    "identity": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "const": "connect-agent"
+        },
+        "version": {
+          "enum": [
+            "0.1.0",
+            "0.2.0",
+            "0.3.0",
+            "0.3.1",
+            "0.3.2"
+          ]
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256"
+      ],
+      "additionalProperties": false
+    },
+    "requirement": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{0,63}$"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "additionalProperties": false
+    },
+    "skillManifest": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "trial-runner/skill-package/v1"
+        },
+        "id": {
+          "const": "connect-agent"
+        },
+        "version": {
+          "enum": [
+            "0.1.0",
+            "0.2.0",
+            "0.3.0",
+            "0.3.1",
+            "0.3.2"
+          ]
+        },
+        "recipeSchemaVersion": {
+          "const": "trial-runner/connection-recipe/v1"
+        },
+        "entrypoint": {
+          "const": "SKILL.md"
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]{0,63}$"
+              },
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "when": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024
+              }
+            },
+            "required": [
+              "id",
+              "path",
+              "when"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 8
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "id",
+        "version",
+        "recipeSchemaVersion",
+        "entrypoint",
+        "references"
+      ],
+      "additionalProperties": false
+    },
+    "recipe": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "trial-runner/connection-recipe/v1"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "method": {
+          "enum": [
+            "prepared-plan/v1",
+            "manual-integration/v1"
+          ]
+        },
+        "skill": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/identity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/file"
+          },
+          "minItems": 0,
+          "maxItems": 512
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/file"
+          },
+          "minItems": 1,
+          "maxItems": 512
+        },
+        "plan": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                },
+                "inputSha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "inputSha256"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/requirement"
+          },
+          "minItems": 0,
+          "maxItems": 64
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "id",
+        "method",
+        "skill",
+        "sources",
+        "files",
+        "plan",
+        "requirements"
+      ],
+      "additionalProperties": false
+    },
+    "check": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "trial-runner/connection-check/v1"
+        },
+        "status": {
+          "enum": [
+            "blocked",
+            "validated"
+          ]
+        },
+        "plan": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                },
+                "inputSha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "inputSha256"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/requirement"
+          },
+          "minItems": 0,
+          "maxItems": 64
+        },
+        "skill": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/identity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "execution": {
+          "const": "not_run"
+        },
+        "assistant": {
+          "const": "not_invoked"
+        },
+        "sourceVerification": {
+          "const": "recorded_not_rechecked"
+        },
+        "recipeSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "recipe": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "status",
+        "plan",
+        "requirements",
+        "skill",
+        "execution",
+        "assistant",
+        "sourceVerification",
+        "recipeSha256"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "blocked"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "plan": {
+                "type": "null"
+              },
+              "requirements": {
+                "type": "array",
+                "minItems": 1
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "plan": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  },
+                  "inputSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "path",
+                  "inputSha256"
+                ],
+                "additionalProperties": false
+              },
+              "requirements": {
+                "type": "array",
+                "maxItems": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "trial-runner/skill-context/v1"
+        },
+        "identity": {
+          "$ref": "#/$defs/identity"
+        },
+        "recipeSchemaVersion": {
+          "const": "trial-runner/connection-recipe/v1"
+        },
+        "instructions": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 262144
+        },
+        "availableReferences": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]{0,63}$"
+              },
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "when": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024
+              }
+            },
+            "required": [
+              "id",
+              "path",
+              "when"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 8
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "content": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 262144
+              }
+            },
+            "required": [
+              "id",
+              "path",
+              "content"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 1
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "command": {
+                "enum": [
+                  "inspect",
+                  "connect",
+                  "rebuild",
+                  "check-connection",
+                  "validate",
+                  "run",
+                  "show",
+                  "verify",
+                  "export",
+                  "check-integration"
+                ]
+              },
+              "effect": {
+                "enum": [
+                  "read_public_manifests",
+                  "write_new_connection",
+                  "read_connection",
+                  "read_plan",
+                  "execute_candidate_and_environment",
+                  "read_run",
+                  "read_evidence",
+                  "write_export",
+                  "read_integration_records"
+                ]
+              }
+            },
+            "required": [
+              "command",
+              "effect"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 10
+        },
+        "execution": {
+          "const": "not_run"
+        },
+        "assistant": {
+          "const": "not_invoked"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "identity",
+        "recipeSchemaVersion",
+        "instructions",
+        "availableReferences",
+        "references",
+        "tools",
+        "execution",
+        "assistant"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "trial-runner/skill-package/v1",
+  "id": "connect-agent",
+  "version": "0.3.2",
+  "recipeSchemaVersion": "trial-runner/connection-recipe/v1",
+  "entrypoint": "SKILL.md",
+  "references": [
+    {
+      "id": "node-function",
+      "path": "references/node-function.md",
+      "when": "The repository declares a self-contained Node ESM createAgent/runTurn function and explicitly selects the reference inventory."
+    },
+    {
+      "id": "manual-adapter",
+      "path": "references/manual-adapter.md",
+      "when": "The real agent needs an HTTP/process/framework adapter, installed dependencies or services beyond the reference inventory."
+    },
+    {
+      "id": "documentation",
+      "path": "references/documentation.md",
+      "when": "Library documentation is needed to resolve a specific integration question."
+    },
+    {
+      "id": "discovery",
+      "path": "references/discovery.md",
+      "when": "Source investigation, owner decisions or a custom integration contract are needed."
+    },
+    {
+      "id": "qualification",
+      "path": "references/qualification.md",
+      "when": "Build, repair, qualify or independently replay an integration and retain the handoff."
+    },
+    {
+      "id": "integration-schema",
+      "path": "references/integration.schema.json",
+      "when": "Author or validate discovery.json and integration-contract.json; canonical JSON Schema with discovery and contract definitions."
+    }
+  ]
+}

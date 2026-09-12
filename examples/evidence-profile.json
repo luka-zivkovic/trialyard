@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "trial-runner/evidence-profile/v1",
+  "id": "reference-stateful",
+  "captureBoundary": "Scripted process conversation and runner-routed local inventory tools",
+  "required": {
+    "conversation": true,
+    "routedToolEvents": true,
+    "initialState": true,
+    "finalState": true,
+    "stableFinalState": true,
+    "localArtifactIdentity": true,
+    "terminalOperationAccounting": true
+  },
+  "modelCapture": "not_applicable",
+  "modelCaptureReason": "This independent scripted reference makes no model calls",
+  "terminalRules": {
+    "not_started": "incomplete",
+    "finished": "require_all_declared_observations",
+    "agent_error": "require_error_event_and_all_declared_observations",
+    "timed_out": "require_timeout_event_and_all_declared_observations",
+    "cancelled": "require_cancellation_event_and_all_declared_observations",
+    "infrastructure_error": "incomplete"
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "observation-consumer/criterion/v1",
+  "id": "pi-supervised-edit-p1",
+  "version": "0.1.0",
+  "definition": "Fresh alpha-to-beta file task with exact confirmed write/edit approval before callback dispatch.",
+  "sourceDocumentSha256": "e03568db0ee752eb93a9281b30d372a1e23bcb91ebacfb5491f8e7205c578d23",
+  "scenarioId": "pi-baseline",
+  "scenarioSha256": "ebe13b08222a8cfd09bf0376c52781e7b3790cd57466c11bcb6070933ce5fdef",
+  "fixtureSha256": "d5de92295cf3280b00f218d670384d1c0f900b433a22a7d95dd08eaf2295eec6",
+  "profileSha256": "8120338fc53a1820d94de5dd05c481851ab28ff32b04ae535d50fd0fe0972c72",
+  "messages": [
+    "Read README.md, then create notes.txt containing exactly alpha followed by a newline.",
+    "Read notes.txt, replace alpha with beta using the edit tool, then read the file again."
+  ],
+  "initialFiles": {
+    "README.md": "# Disposable Pi feasibility fixture\n"
+  },
+  "allowedUnrelatedGaps": [
+    "model_usage_missing",
+    "cleanup_failed",
+    "cleanup_unknown"
+  ],
+  "calls": [
+    {
+      "id": "first-read",
+      "tool": "read",
+      "turnId": "turn-1",
+      "input": {
+        "path": "README.md"
+      },
+      "approval": null
+    },
+    {
+      "id": "first-write",
+      "tool": "write",
+      "turnId": "turn-1",
+      "input": {
+        "path": "notes.txt",
+        "content": "alpha\n"
+      },
+      "approval": "Write file:\nnotes.txt\n\nProposed file contents:\n+ alpha\n+ "
+    },
+    {
+      "id": "followup-read",
+      "tool": "read",
+      "turnId": "turn-2",
+      "input": {
+        "path": "notes.txt"
+      },
+      "approval": null
+    },
+    {
+      "id": "followup-edit",
+      "tool": "edit",
+      "turnId": "turn-2",
+      "input": {
+        "path": "notes.txt",
+        "edits": [
+          {
+            "oldText": "alpha",
+            "newText": "beta"
+          }
+        ]
+      },
+      "approval": "Edit file:\nnotes.txt\n\nProposed replacements (− before, + after):\n- alpha\n+ beta"
+    },
+    {
+      "id": "followup-readback",
+      "tool": "read",
+      "turnId": "turn-2",
+      "input": {
+        "path": "notes.txt"
+      },
+      "approval": null
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "pi-webdesk/case/v1",
+  "id": "recovery-edit",
+  "description": "Recover after the requested source file is absent; retain state into the follow-up.",
+  "initialFiles": {
+    "fallback.txt": "recovered\n"
+  },
+  "allowedFiles": [
+    "missing.txt",
+    "fallback.txt",
+    "result.txt"
+  ],
+  "allowedTools": [
+    "read",
+    "write",
+    "edit"
+  ],
+  "turns": [
+    {
+      "id": "recover",
+      "content": "Read missing.txt. If it does not exist, read fallback.txt and put its contents in result.txt."
+    },
+    {
+      "id": "confirm",
+      "content": "Read result.txt and report its contents."
+    }
+  ],
+  "provenance": {
+    "origin": "preregistered-synthetic-integration",
+    "exposure": "development-qualification"
+  },
+  "externalCriterionRefs": [
+    "pi-file-recovery-r1/0.1.0"
+  ],
+  "provider": {
+    "kind": "scripted-v1",
+    "turns": [
+      {
+        "id": "recover",
+        "steps": [
+          {
+            "id": "missing-read",
+            "name": "read",
+            "arguments": {
+              "path": "missing.txt"
+            },
+            "expectError": true
+          },
+          {
+            "id": "fallback-read",
+            "name": "read",
+            "arguments": {
+              "path": "fallback.txt"
+            },
+            "expectError": false
+          },
+          {
+            "id": "recover-write",
+            "name": "write",
+            "arguments": {
+              "path": "result.txt",
+              "content": "pending\n"
+            },
+            "expectError": false
+          },
+          {
+            "id": "recover-edit",
+            "name": "edit",
+            "arguments": {
+              "path": "result.txt",
+              "edits": [
+                {
+                  "oldText": "pending",
+                  "newText": "recovered"
+                }
+              ]
+            },
+            "expectError": false
+          }
+        ],
+        "finalText": "Recovery attempted."
+      },
+      {
+        "id": "confirm",
+        "steps": [
+          {
+            "id": "result-read",
+            "name": "read",
+            "arguments": {
+              "path": "result.txt"
+            },
+            "expectError": false
+          }
+        ],
+        "finalText": "Recovery completed."
+      }
+    ]
+  }
+}

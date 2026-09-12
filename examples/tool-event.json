@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "trial-runner/event/v1",
+  "sequence": 4,
+  "recordedAt": "2026-01-01T00:00:00Z",
+  "producerTimestamp": null,
+  "runId": "example-run",
+  "trialId": "example-trial",
+  "turnId": "reserve",
+  "operationId": "example-operation",
+  "logicalCallId": null,
+  "parentOperationId": null,
+  "source": "environment_observed",
+  "kind": "operation.finished",
+  "payload": {
+    "outcome": "known_result",
+    "value": {
+      "id": "reservation-1",
+      "key": "request-1",
+      "quantity": 1
+    },
+    "error": null
+  }
+}

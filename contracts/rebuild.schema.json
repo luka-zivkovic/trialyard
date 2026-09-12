@@ -1,0 +1,274 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trial-runner.invalid/contracts/rebuild/v1",
+  "$defs": {
+    "record": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "trial-runner/connection-rebuild/v1"
+        },
+        "method": {
+          "const": "node-function/v1"
+        },
+        "parentRecipeSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "parentInputSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "inputSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "agentArtifact": {
+          "type": "object",
+          "properties": {
+            "before": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "after": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "before",
+            "after"
+          ],
+          "additionalProperties": false
+        },
+        "changes": {
+          "type": "object",
+          "properties": {
+            "sources": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  },
+                  "before": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "bytes": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 16777216
+                          },
+                          "sha256": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          }
+                        },
+                        "required": [
+                          "bytes",
+                          "sha256"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "after": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "bytes": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 16777216
+                          },
+                          "sha256": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          }
+                        },
+                        "required": [
+                          "bytes",
+                          "sha256"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "path",
+                  "before",
+                  "after"
+                ],
+                "additionalProperties": false
+              },
+              "maxItems": 1024
+            },
+            "files": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  },
+                  "before": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "bytes": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 16777216
+                          },
+                          "sha256": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          }
+                        },
+                        "required": [
+                          "bytes",
+                          "sha256"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "after": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "bytes": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 16777216
+                          },
+                          "sha256": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          }
+                        },
+                        "required": [
+                          "bytes",
+                          "sha256"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "path",
+                  "before",
+                  "after"
+                ],
+                "additionalProperties": false
+              },
+              "maxItems": 1024
+            }
+          },
+          "required": [
+            "sources",
+            "files"
+          ],
+          "additionalProperties": false
+        },
+        "preservedFiles": {
+          "type": "array",
+          "items": {
+            "$ref": "https://trial-runner.invalid/contracts/connection/v1#/$defs/file"
+          },
+          "maxItems": 512
+        },
+        "execution": {
+          "const": "not_run"
+        },
+        "sourceMode": {
+          "const": "declared-files-only"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "method",
+        "parentRecipeSha256",
+        "parentInputSha256",
+        "inputSha256",
+        "agentArtifact",
+        "changes",
+        "preservedFiles",
+        "execution",
+        "sourceMode"
+      ],
+      "additionalProperties": false
+    },
+    "result": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "trial-runner/connection-rebuild-result/v1"
+        },
+        "recipe": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "recipeSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "plan": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "inputSha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "path",
+            "inputSha256"
+          ],
+          "additionalProperties": false
+        },
+        "record": {
+          "$ref": "#/$defs/record"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "recipe",
+        "recipeSha256",
+        "plan",
+        "record"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

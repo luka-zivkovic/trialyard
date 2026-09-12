@@ -1,0 +1,38 @@
+{
+  "name": "@trialyard/local",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Run real agents through repeatable scenarios in controlled environments, with inspectable execution evidence.",
+  "engines": {
+    "node": "24.15.0",
+    "npm": "11.12.1"
+  },
+  "bin": {
+    "trial": "dist/src/cli/main.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run build && node --test --test-concurrency=1 dist/test/*.test.js",
+    "trial": "node dist/src/cli/main.js",
+    "test:pi": "node --test --test-concurrency=1 integrations/pi-webdesk/*.test.mjs",
+    "test:assessment": "npm --prefix consumers/pi-assessment test",
+    "check:docs": "node scripts/check-doc-links.mjs"
+  },
+  "dependencies": {
+    "ajv": "8.20.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "typescript": "5.9.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luka-zivkovic/trialyard.git"
+  },
+  "homepage": "https://github.com/luka-zivkovic/trialyard#readme",
+  "bugs": {
+    "url": "https://github.com/luka-zivkovic/trialyard/issues"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "kind", "nativeBundle", "model", "startedAt", "finishedAt", "durationMs", "identity", "attempts", "errors"],
+  "properties": {
+    "version": {"const": 1},
+    "kind": {"const": "pi-webdesk-feasibility"},
+    "nativeBundle": {"const": false},
+    "model": {"const": "local-scripted-no-provider-request"},
+    "startedAt": {"type": "string", "minLength": 1},
+    "finishedAt": {"type": "string", "minLength": 1},
+    "durationMs": {"type": "integer", "minimum": 0},
+    "identity": {"$ref": "#/$defs/artifact"},
+    "attempts": {"type": "array", "maxItems": 4, "items": {"$ref": "#/$defs/attempt"}},
+    "errors": {"type": "array", "items": {"type": "string"}}
+  },
+  "$defs": {
+    "artifact": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "pattern": "^[A-Za-z0-9_-][A-Za-z0-9_./-]*$"},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "attempt": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "execution", "evidence", "operationOutcome", "cleanup", "durationMs", "sessionId", "checks", "artifacts", "errors"],
+      "properties": {
+        "id": {"enum": ["baseline-a", "baseline-b", "denied-write", "interrupted-write"]},
+        "execution": {"enum": ["completed", "interrupted", "failed"]},
+        "evidence": {"enum": ["complete", "incomplete"]},
+        "operationOutcome": {"enum": ["known_result", "blocked_before_dispatch", "partial_effect_observed", "unknown"]},
+        "cleanup": {"enum": ["verified", "unverified"]},
+        "durationMs": {"type": "integer", "minimum": 0},
+        "sessionId": {"type": ["string", "null"]},
+        "checks": {
+          "type": "object", "additionalProperties": false,
+          "required": ["freshState", "supervised", "expectedState", "expectedTrace", "gateBeforeEffect", "sessionRetained", "ownedProcessesGone", "leaseRemoved"],
+          "properties": {
+            "freshState": {"type": "boolean"}, "supervised": {"type": "boolean"},
+            "expectedState": {"type": "boolean"}, "expectedTrace": {"type": "boolean"},
+            "gateBeforeEffect": {"type": "boolean"}, "sessionRetained": {"type": "boolean"},
+            "ownedProcessesGone": {"type": "boolean"}, "leaseRemoved": {"type": "boolean"}
+          }
+        },
+        "artifacts": {"type": "array", "items": {"$ref": "#/$defs/artifact"}},
+        "errors": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}
