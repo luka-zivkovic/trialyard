@@ -49,6 +49,8 @@ The destination must be new, its parent must exist, and it must be outside the o
 
 The source first passes native verification. The derivative uses the separate closed `trial-runner/redacted-evidence/v1` manifest, a new exact-byte digest, the original digest in `parentBundleSha256`, inherited trial/execution/cleanup identities and source gaps, and explicit omitted paths. Every omission export is conservatively incomplete. The original manifest is not copied; the new manifest excludes the source's reason, profile prose and operation summary. Retained content can still contain metadata or source/configuration files. Export is capped at 192 MiB of retained files and publishes its manifest last without overwriting the destination. Source bytes are checked again during export and verification.
 
+The [Ironside export](ironside-export.md) accepts a derivative only with `--source <original-bundle>`, verifies its ancestry the same way, and maps only the derivative's retained files and manifest fields. It is the only export that can make a network request, and only when `--ironside-url` is supplied; its key comes from `IRONSIDE_API_KEY`, never an argument, and is not written to output.
+
 Derivative verification requires the original local source. It verifies the claimed ancestry and exact retained inventory; a parent hash by itself is not proof. Native verification rejects a derivative, so it cannot masquerade as unredacted execution evidence. Derivative chaining and assessment-input export from a derivative are not supported in this batch. The existing assessment-input mapping remains for verified native bundles and carries native redaction gaps. No external portfolio consumer is claimed to support these contracts yet.
 
 ## Qualification evidence

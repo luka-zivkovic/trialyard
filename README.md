@@ -79,9 +79,10 @@ The run result prints a bundle directory and manifest digest for each trial. Use
 ```sh
 npm run trial -- verify <bundle-directory> --sha256 <printed-bundle-digest>
 npm run trial -- export <bundle-directory> --format assessment-input --out <new-export.json>
+npm run trial -- export <bundle-directory> --format ironside --sha256 <printed-bundle-digest> --out <new-ironside-ingest.json>
 ```
 
-Bundles retain the resolved plan, scenario, event journal, available state snapshots, and file inventory. Verification checks consistency and exact bytes; hashes do not authenticate the host. See [evidence and assessment](docs/evaluation-handoff.md).
+Bundles retain the resolved plan, scenario, event journal, available state snapshots, and file inventory. Verification checks consistency and exact bytes; hashes do not authenticate the host. See [evidence and assessment](docs/evaluation-handoff.md). The [Ironside export](docs/ironside-export.md) maps one trial to Ironside native ingest requests offline; posting them is explicit and reads the key from `IRONSIDE_API_KEY`.
 
 ## Connect your agent
 

@@ -12,6 +12,7 @@
 | Pi/Webdesk | Native plans, original tool callbacks, approval observations, source rebuilds and declared file cases | Pinned external Webdesk source/runtime, Pi 0.84.2, Node 24.15.0, macOS arm64, local scripted provider. |
 | Pi observation consumer | Frozen P1 assessment, immutable attempts, portable retention | Separate package; narrow approved-task scope. It never runs the candidate. |
 | Inspect AI | Offline import and reassessment of retained P1 sources | Experimental; no candidate execution or model generation. |
+| Ironside export | `trial export --format ironside`: one verified trial bundle or redacted derivative → Ironside native ingest requests, offline by default | Offline mapping checked against Ironside's published request schema and native mapper; `--ironside-url` delivery tested only against a local stub; no live Ironside or owner review. See [Ironside export](ironside-export.md). |
 | Scenario | Static conversation replay from verified Pi evidence | Experimental authoring subset; no adaptive user simulation or live candidate connection. |
 
 See the [documentation index](README.md) and each integration guide for commands. The [Pi development-loop protocol](pi-development-loop-protocol.md) defines its regression/correction exercise.

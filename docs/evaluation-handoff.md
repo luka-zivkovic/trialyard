@@ -43,10 +43,14 @@ It contains no assessment label, calibration claim or release decision. It does 
 
 | Product | Input from/to the runner | Qualification before claiming support |
 | --- | --- | --- |
-| Ironside | Export of captured trial activity with source bundle identity and original provenance | Verify event mapping, loss/duplication behavior, completeness and exact-version linkage against its supported ingest contract |
+| Ironside | Export of captured trial activity with source bundle identity and original provenance | See the Ironside note below; live delivery and Ironside-owner review remain open |
 | Coeval | Assessment-ready evidence or a trace import preserving source identity and capture gaps | Verify the actual intake mapping; separate source execution evidence from the assessment receipt Coeval later emits |
 | Dailies | One resolved candidate execution request and returned trial evidence; caller retains release item/scope correlation | Review delegated-execution ownership, request identity, deadlines, cancellation, unknown outcomes and trust classification before adding a native integration |
 | Casefile | Optional static admission of a packaged adapter/capability artifact | Preserve no-execution inspection; admission is not certification of runtime safety or simulation fidelity |
+
+**CURRENT — Ironside offline export:** `trial export <bundle> --format ironside --out <file>` implements the [Ironside export mapping](ironside-export.md) `trial-runner/ironside-ingest/v1`. It verifies the bundle (or a redacted derivative against its local original), maps one trial repetition to one Ironside trace in native `POST /api/v1/ingest` request bodies, keeps capture gaps and redaction as explicit `trialyard.*` markers, separates the candidate's claimed outcome from observed final state, and tags the trace with run, scenario, repetition and bundle digest. Tests cover mapping, refusals, redaction and batching; a local check ran the output through Ironside's published request schema and native mapper without errors. It emits no scores or assessment labels.
+
+**ASSUMPTION — Ironside live delivery:** `--ironside-url` with `IRONSIDE_API_KEY` posts those requests. It has been exercised only against a local HTTP stub, not a running Ironside deployment, and Ironside's contract owner has not reviewed this producer. Coeval selection of exported traces is likewise unqualified.
 
 For delegated execution, Dailies chooses the agent target, cases, scope, repetition plan and absolute deadline. The runner executes the accepted single-target run. Dailies sends a non-idempotent request once unless the integration supplies the runner's durable request identity. Polling can be retried; started execution cannot be silently replayed. Dailies stopping its wait does not prove the local runner or a remote provider stopped. A timeout remains attributable to its boundary.
 
