@@ -85,4 +85,4 @@ Requests are posted in order with `Authorization: Bearer $IRONSIDE_API_KEY`. Eac
 
 ## Limits
 
-The export inherits the source's integrity limits: digests establish internal consistency, not authenticity. Masking covers known bound credential values only. The mapping is not an assessment input for Coeval and emits no scores; score events are never produced. Coeval or Dailies consumption of these traces remains unqualified.
+The export inherits the source's integrity limits: digests establish internal consistency, not authenticity. Masking covers known bound credential values only. The mapping is not an assessment input for Rubrist and emits no scores; score events are never produced. Rubrist or Dailies consumption of these traces remains unqualified.

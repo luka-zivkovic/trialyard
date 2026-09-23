@@ -33,7 +33,7 @@ These choices make v0.1 implementable. They are proposed decisions, not historic
 
 Packaging registry, pricing, hosting, enterprise identity, additional adapter catalog, model-driven simulation and multi-host execution are outside v0.1. These are not blockers to the specified local core.
 
-Integration acceptance by Ironside, Coeval or Dailies is not assumed. Their contract owners must review actual producer/consumer mappings and fixtures before an integration is described as supported. This does not block the independent developer preview.
+Integration acceptance by Ironside, Rubrist or Dailies is not assumed. Their contract owners must review actual producer/consumer mappings and fixtures before an integration is described as supported. This does not block the independent developer preview.
 
 ## Authority and evidence labels
 
