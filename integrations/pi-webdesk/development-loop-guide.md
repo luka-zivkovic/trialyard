@@ -61,5 +61,5 @@ archive requires a new request for reassessment; original requests remain intact
 
 This qualifies a fixed scripted local workflow and a trusted observation
 boundary. It does not establish general model quality, permission security,
-human comprehension, independent review, release readiness or native Coeval
+human comprehension, independent review, release readiness or native Rubrist
 integration. Local portable archives still need a separate backup destination.

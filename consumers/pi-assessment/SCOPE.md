@@ -20,7 +20,7 @@ native observations. It never imports or executes producer/candidate code. The
 qualification's missing-final fixture is explicitly synthetic, with a declared
 gap and a separate lineage record. It is not an observed capture failure.
 
-LIMITS: no human validation, governed criterion authority, Coeval integration,
+LIMITS: no human validation, governed criterion authority, Rubrist integration,
 general Pi policy coverage, model reasoning assessment, release decision or
 hostile-process isolation. The observer is trusted local instrumentation; hashes
 establish identity and integrity, not authenticity. Local archives are portable

@@ -2,7 +2,7 @@
 
 **CURRENT:** the separate [Pi observation consumer](../consumers/pi-assessment/README.md) verifies retained native evidence and applies the frozen P1 approval criterion. Its [retention tool](../consumers/pi-assessment/retention/README.md) packages source, mapping, terminal attempts and the matching consumer runtime. The [Inspect AI experiment](../integrations/inspect-ai/README.md) reuses that consumer for offline assessment.
 
-These are bounded local consumers, not native Coeval or Dailies integrations. A consumer can reassess retained evidence without rerunning the candidate. Missing required observations remain `not_evaluable`; source rejection and assessor failure produce no behavioral judgment.
+These are bounded local consumers, not native Rubrist or Dailies integrations. A consumer can reassess retained evidence without rerunning the candidate. Missing required observations remain `not_evaluable`; source rejection and assessor failure produce no behavioral judgment.
 
 ## Execution evidence and assessment
 
@@ -37,16 +37,20 @@ It contains no assessment label, calibration claim or release decision. It does 
 
 ## Portfolio responsibilities
 
-**TARGET:** the [product charter](../PRODUCT.md) assigns assessment governance to Coeval and release coordination/policy to Dailies. Trialyard supplies execution evidence. Native interoperability requires reviewed mappings and consumer checks.
+**TARGET:** the [product charter](../PRODUCT.md) assigns assessment governance to Rubrist and release coordination/policy to Dailies. Trialyard supplies execution evidence. Native interoperability requires reviewed mappings and consumer checks.
 
 **ASSUMPTION — proposed integration contracts:**
 
 | Product | Input from/to the runner | Qualification before claiming support |
 | --- | --- | --- |
-| Ironside | Export of captured trial activity with source bundle identity and original provenance | Verify event mapping, loss/duplication behavior, completeness and exact-version linkage against its supported ingest contract |
-| Coeval | Assessment-ready evidence or a trace import preserving source identity and capture gaps | Verify the actual intake mapping; separate source execution evidence from the assessment receipt Coeval later emits |
+| Ironside | Export of captured trial activity with source bundle identity and original provenance | See the Ironside note below; live delivery and Ironside-owner review remain open |
+| Rubrist | Assessment-ready evidence or a trace import preserving source identity and capture gaps | Verify the actual intake mapping; separate source execution evidence from the assessment receipt Rubrist later emits |
 | Dailies | One resolved candidate execution request and returned trial evidence; caller retains release item/scope correlation | Review delegated-execution ownership, request identity, deadlines, cancellation, unknown outcomes and trust classification before adding a native integration |
 | Casefile | Optional static admission of a packaged adapter/capability artifact | Preserve no-execution inspection; admission is not certification of runtime safety or simulation fidelity |
+
+**CURRENT — Ironside offline export:** `trial export <bundle> --format ironside --out <file>` implements the [Ironside export mapping](ironside-export.md) `trial-runner/ironside-ingest/v1`. It verifies the bundle (or a redacted derivative against its local original), maps one trial repetition to one Ironside trace in native `POST /api/v1/ingest` request bodies, keeps capture gaps and redaction as explicit `trialyard.*` markers, separates the candidate's claimed outcome from observed final state, and tags the trace with run, scenario, repetition and bundle digest. Tests cover mapping, refusals, redaction and batching; a local check ran the output through Ironside's published request schema and native mapper without errors. It emits no scores or assessment labels.
+
+**ASSUMPTION — Ironside live delivery:** `--ironside-url` with `IRONSIDE_API_KEY` posts those requests. It has been exercised only against a local HTTP stub, not a running Ironside deployment, and Ironside's contract owner has not reviewed this producer. Rubrist selection of exported traces is likewise unqualified.
 
 For delegated execution, Dailies chooses the agent target, cases, scope, repetition plan and absolute deadline. The runner executes the accepted single-target run. Dailies sends a non-idempotent request once unless the integration supplies the runner's durable request identity. Polling can be retried; started execution cannot be silently replayed. Dailies stopping its wait does not prove the local runner or a remote provider stopped. A timeout remains attributable to its boundary.
 

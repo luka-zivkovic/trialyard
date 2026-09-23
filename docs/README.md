@@ -20,6 +20,7 @@
 | [Model accounting](model-accounting.md) | Capture modes, attempts, usage, and unknown observations. |
 | [Credentials and exports](privacy-and-exports.md) | Explicit credential bindings, masking, and omission exports. |
 | [Assessment handoff](evaluation-handoff.md) | Using execution evidence in a separate assessment. |
+| [Ironside export](ironside-export.md) | Mapping one verified trial to Ironside native ingest, offline or by explicit POST. |
 
 ## Project direction
 

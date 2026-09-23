@@ -16,4 +16,4 @@ The scorer preserves categorical values. Its explicit count metric reports satis
 
 Python outbound socket connections are disabled during this experiment, and the Node assessment subprocess receives only PATH/LANG/TZ. This is a bounded local execution check, not an OS-level security sandbox. Package installation requires network access separately.
 
-Outputs and descriptors contain absolute local locators. Moving them requires a new import/reassessment request; this exporter is not a portable assessment-package format. Original P1 packages retain their existing portable retention contract. No Coeval or Dailies integration is implied.
+Outputs and descriptors contain absolute local locators. Moving them requires a new import/reassessment request; this exporter is not a portable assessment-package format. Original P1 packages retain their existing portable retention contract. No Rubrist or Dailies integration is implied.

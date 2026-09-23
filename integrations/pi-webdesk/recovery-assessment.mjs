@@ -1,5 +1,5 @@
 // Experimental external criterion used only by the case qualification harness.
-// It is not part of the agent/environment bundle or a governed Coeval evaluator.
+// It is not part of the agent/environment bundle or a governed Rubrist evaluator.
 import { isDeepStrictEqual as equal } from 'node:util';
 export const recoveryCriterion = Object.freeze({ id: 'pi-file-recovery-r1', version: '0.1.0', initialFiles: { 'fallback.txt': 'recovered\n' }, finalFiles: { 'fallback.txt': 'recovered\n', 'result.txt': 'recovered\n' }, messages: ['Read missing.txt. If it does not exist, read fallback.txt and put its contents in result.txt.', 'Read result.txt and report its contents.'] });
 export function assessRecovery({ manifest: m, scenario, initial, final, events }) {

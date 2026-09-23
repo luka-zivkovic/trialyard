@@ -20,6 +20,7 @@ import type { Scenario } from "../contracts/types.js";
 import { CancelledError } from "../core/process.js";
 import { inspectRun } from "../core/inspect.js";
 import { exportRedactedBundle, verifyRedactedBundle } from "../export/redacted.js";
+import { ingestEndpoint, ironsideIngest, ironsideKey, loadIronsideSource, postIronsideIngest, verifyIronsideIngest } from "../export/ironside.js";
 
 const help = `Trialyard 0.1.0 — local developer preview
 
@@ -38,6 +39,7 @@ const help = `Trialyard 0.1.0 — local developer preview
   trial verify <redacted-directory> --source <original-bundle> [--sha256 <expected digest>]
   trial export <bundle-directory> --format assessment-input --out <new-file.json>
   trial export <bundle-directory> --format redacted-bundle --redaction <policy.json> --out <new-directory>
+  trial export <bundle-or-redacted-directory> --format ironside [--source <original-bundle>] [--sha256 <expected digest>] (--out <new-file.json> | --ironside-url <base URL> [--out <new-file.json>])
 
 Default store: .trial-runs in the current directory.
 Exit 0 means execution/evidence checks succeeded; it is not an agent-quality verdict.
@@ -50,7 +52,7 @@ async function main(args: string[]): Promise<void> {
   if (!command || ["help", "--help", "-h"].includes(command)) { process.stdout.write(help); return; }
   const positional: string[] = [];
   const options = new Map<string, string>();
-  const allowed: Record<string, string[]> = { skill: ["reference"], connect: ["out"], rebuild: ["source", "out", "sha256"], "check-connection": ["sha256"], "check-integration": ["sha256"], inspect: ["out"], prepare: ["out", "inspection"], init: ["example"], validate: [], run: ["request", "store", "deadline", "rerun-of"], show: ["request", "store", "format"], verify: ["sha256", "source"], export: ["format", "out", "redaction"] };
+  const allowed: Record<string, string[]> = { skill: ["reference"], connect: ["out"], rebuild: ["source", "out", "sha256"], "check-connection": ["sha256"], "check-integration": ["sha256"], inspect: ["out"], prepare: ["out", "inspection"], init: ["example"], validate: [], run: ["request", "store", "deadline", "rerun-of"], show: ["request", "store", "format"], verify: ["sha256", "source"], export: ["format", "out", "redaction", "sha256", "source", "ironside-url"] };
   if (!(command in allowed)) throw new Error("Unknown command; use --help");
   if (rest.includes("--help") || rest.includes("-h")) {
     const syntax = help.split("\n").filter(line => line.startsWith(`  trial ${command} `)).join("\n");
@@ -62,6 +64,7 @@ async function main(args: string[]): Promise<void> {
       run: "Explicit execution. Reusing an accepted request returns its recorded run; changed inputs conflict. Use a new request ID for intentional execution.",
       show: "Read recorded evidence. Use --format text for conversation, state and diagnostics. Supply the same --store used by run.",
       "check-connection": "Verify retained bytes and static plan consistency without execution. Does not check live service availability.",
+      export: "assessment-input and redacted-bundle write local files. --format ironside maps one verified trial bundle (or a redacted derivative verified with --source) to Ironside native ingest requests: --out writes them offline; --ironside-url posts them to <base URL>/api/v1/ingest using the key in the IRONSIDE_API_KEY environment variable (never an argument). Refuses unverified or digest-mismatched bundles.",
       "check-integration": "Check a discovery/contract pair offline. Exit 0 consistent, 2 unresolved required decisions/capabilities, 1 invalid. Does not check source claims, readiness, qualification or authorization."
     };
     process.stdout.write(`${syntax}\n\n${details[command] ?? "See the repository workflow guide for this command."}\nDefault store: .trial-runs in the current directory.\n`); return;
@@ -147,7 +150,26 @@ async function main(args: string[]): Promise<void> {
       process.stdout.write(`Verified derivative ${result.digest}; source=${result.manifest.parentBundleSha256}; evidence=incomplete; authenticity=not_attested\n`);
       return;
     }
+    if (command === "export" && need("format") === "ironside") {
+      if (options.has("redaction")) throw new Error("--redaction applies only to redacted-bundle export");
+      if (!options.has("out") && !options.has("ironside-url")) throw new Error("Missing --out or --ironside-url");
+      // Validate delivery settings before reading evidence so a misconfiguration never leaves a partial result.
+      const endpoint = options.has("ironside-url") ? ingestEndpoint(need("ironside-url")) : null;
+      const key = endpoint ? ironsideKey() : null;
+      const loaded = await loadIronsideSource(path.resolve(target), { ...(options.has("source") ? { sourceRoot: path.resolve(need("source")) } : {}), ...(options.has("sha256") ? { sha256: need("sha256") } : {}) });
+      const document = verifyIronsideIngest(ironsideIngest(loaded.source, loaded.content), loaded.source, loaded.content);
+      const summary: Record<string, unknown> = { traceId: document.traceId, bundleSha256: document.source.bundleSha256, bundleKind: document.source.bundleKind,
+        evidence: document.source.evidenceState, requests: document.requests.length, events: document.requests.reduce((sum, request) => sum + request.events.length, 0) };
+      if (options.has("out")) { await writeAtomic(path.resolve(need("out")), jsonBytes(document)); summary.out = path.resolve(need("out")); }
+      if (endpoint && key) summary.delivery = await postIronsideIngest(document, endpoint, key);
+      summary.notice = endpoint ? "Ironside accepted the batches for asynchronous processing; mapping into stored traces was not verified by this command" : "Offline export; no network request was made";
+      process.stdout.write(JSON.stringify(summary, null, 2) + "\n");
+      return;
+    }
+    if (options.has("ironside-url")) throw new Error("--ironside-url applies only to ironside export");
+    if (command === "export" && options.has("source")) throw new Error("--source applies only to verify and ironside export");
     if (command === "export" && need("format") === "redacted-bundle") {
+      if (options.has("sha256")) throw new Error("--sha256 does not apply to redacted-bundle export; verify the source first");
       const policyFile = path.resolve(need("redaction"));
       const result = await exportRedactedBundle(path.resolve(target), path.resolve(need("out")), await readJson(path.dirname(policyFile), path.basename(policyFile)));
       process.stdout.write(JSON.stringify({ root: result.root, digest: result.digest, parentBundleSha256: result.manifest.parentBundleSha256, evidence: result.manifest.evidence }, null, 2) + "\n");

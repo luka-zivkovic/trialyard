@@ -37,7 +37,7 @@ The runner may verify that its own protocol, declared environment and evidence c
 
 ## Boundaries with adjacent work
 
-**TARGET — existing portfolio boundaries:** Coeval governs human truth, criteria, evaluator lifecycle, calibration and policy-free assessment evidence. Dailies owns release-run coordination, paired baseline/candidate comparisons, evidence trust and customer release policy. Casefile owns static no-execution capability-artifact intake. Ironside supplies observability.
+**TARGET — existing portfolio boundaries:** Rubrist governs human truth, criteria, evaluator lifecycle, calibration and policy-free assessment evidence. Dailies owns release-run coordination, paired baseline/candidate comparisons, evidence trust and customer release policy. Casefile owns static no-execution capability-artifact intake. Ironside supplies observability.
 
 **ASSUMPTION — new relationship:** when Dailies delegates execution, this product is a single-target execution provider. It owns the internals of the accepted trial run, while Dailies retains the overall release-run lifecycle and deadline. This requires a reviewed integration contract; it is not a claim that current Dailies already supports the new wire format.
 

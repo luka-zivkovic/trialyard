@@ -1,6 +1,6 @@
 # Architecture and contracts
 
-All requirements are **ASSUMPTION — specified v0.1 defaults**. Wire names are proposed contracts owned by the new project. They are not Coeval receipts or existing Dailies schemas.
+All requirements are **ASSUMPTION — specified v0.1 defaults**. Wire names are proposed contracts owned by the new project. They are not Rubrist receipts or existing Dailies schemas.
 
 **CURRENT:** the local implementation and qualified wire details are recorded in [current preview](current-preview.md), [model accounting](model-accounting.md), and [public acceptance plan](implementation-plan.md). Provider/customer integrations retain separate gates.
 
