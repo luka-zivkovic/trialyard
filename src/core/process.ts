@@ -190,7 +190,14 @@ export class Worker {
     this.pending.clear();
     const signal = (name: NodeJS.Signals): void => {
       if (!this.child.pid) return;
-      try { process.kill(-this.child.pid, name); } catch (error) { if ((error as NodeJS.ErrnoException).code !== "ESRCH") throw error; }
+      try { process.kill(-this.child.pid, name); } catch (error) {
+        const code = (error as NodeJS.ErrnoException).code;
+        // macOS reports EPERM, not ESRCH, for a group whose members have all
+        // exited but are not yet reaped; that only counts as gone once the
+        // direct worker has exited.
+        const exited = this.child.exitCode !== null || this.child.signalCode !== null;
+        if (code !== "ESRCH" && !(code === "EPERM" && exited)) throw error;
+      }
     };
     signal("SIGTERM");
     await Promise.race([this.closed, sleep(graceMs)]);
